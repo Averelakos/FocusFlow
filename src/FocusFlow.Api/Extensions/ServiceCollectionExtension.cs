@@ -1,3 +1,5 @@
+using FocusFlow.Application;
+
 public static class ServiceCollectionExtension
 {
     public static void AddServices(this IServiceCollection services, IConfiguration configuration)
@@ -9,13 +11,12 @@ public static class ServiceCollectionExtension
         {
            options.OpenApiVersion = Microsoft.OpenApi.OpenApiSpecVersion.OpenApi3_0;
         });
-        // services.AddEndpointsApiExplorer();
-        // services.AddSwaggerGen();
-
     }
 
     public static void AddProjects(this IServiceCollection services, IConfiguration configuration)
     {
         // Register your projects here
+        services.AddApplicationServices();
+        services.AddInfrastructureServices(configuration);
     }
 }

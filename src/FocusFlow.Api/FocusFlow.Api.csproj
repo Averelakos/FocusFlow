@@ -11,4 +11,9 @@
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.1.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\FocusFlow.Application\FocusFlow.Application.csproj" />
+    <ProjectReference Include="..\FocusFlow.Infrastructure\FocusFlow.Infrastructure.csproj" />
+  </ItemGroup>
+
 </Project>
