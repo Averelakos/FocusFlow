@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using System.Runtime.InteropServices.Marshalling;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -22,7 +23,7 @@ public abstract class BaseRepository<T> where T : BaseEntity
         return Set();
     }
 
-    public virtual IQueryable<T> List()
+    public virtual IQueryable<T> Queryable()
     {
         return Set().AsNoTracking();
     }
@@ -30,6 +31,11 @@ public abstract class BaseRepository<T> where T : BaseEntity
     public virtual async Task<T?> GetAsync(long id, CancellationToken ct)
     {
         return await Set().AsNoTracking().FirstOrDefaultAsync(e => e.Id == id, ct);
+    }
+
+    public virtual async Task<T?> GetByParameterAsync(Expression<Func<T, bool>> predicate, CancellationToken ct)
+    {
+        return await Set().AsNoTracking().FirstOrDefaultAsync(predicate, ct);
     }
 
     public virtual async Task<T?> AddAsync(T entity, CancellationToken ct)
@@ -85,5 +91,10 @@ public abstract class BaseRepository<T> where T : BaseEntity
             _logger.LogError(ex, "An error occurred while saving changes to the database.");
             throw;
         }
+    }
+
+    public async Task<bool> AnyAsync(Expression<Func<T, bool>> predicate, CancellationToken ct)
+    {
+        return await _focusFlowDbContext.Set<T>().AnyAsync(predicate, ct);
     }
 }

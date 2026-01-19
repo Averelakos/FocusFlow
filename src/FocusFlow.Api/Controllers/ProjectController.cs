@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 
-public class AuthController : BaseApiController
+public class ProjectController : BaseApiController
 {
     private readonly IAuthService _authService;
 
-    public AuthController(ILogger<AuthController> logger, IAuthService authService) : base(logger) 
+    public ProjectController(ILogger<ProjectController> logger, IAuthService authService) : base(logger) 
     {
         _authService = authService;
     }

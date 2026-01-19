@@ -11,6 +11,7 @@ public static class DependencyInjection
         // Add infrastructure services here
         services.AddDatabaseSqlServer(configuration);
         services.AddRepositories();
+        services.AddServices();
         return services;
     }
 
@@ -37,6 +38,12 @@ public static class DependencyInjection
         // Register repositories here
         services.AddTransient<IUserRepository, UserRepository>();
         services.AddTransient<IProjectTaskRepository, ProjectTaskRepository>();
+        return services;
+    }
+
+    public static IServiceCollection AddServices(this IServiceCollection services)
+    {
+        services.AddTransient<ITokenProviderService, TokenProviderService>();
         return services;
     }
 }
