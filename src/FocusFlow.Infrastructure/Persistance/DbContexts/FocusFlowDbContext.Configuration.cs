@@ -11,5 +11,7 @@ public sealed partial class FocusFlowDbContext: DbContext
     public void ModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfiguration(new UserConfiguration());
+        modelBuilder.ApplyConfiguration(new ProjectConfiguration());
+        modelBuilder.ApplyConfiguration(new TaskConfiguration());
     }
 }

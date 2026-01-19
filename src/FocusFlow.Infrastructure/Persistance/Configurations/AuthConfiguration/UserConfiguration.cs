@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 public class UserConfiguration : BaseEntityConfiguration<User>
@@ -14,6 +15,7 @@ public class UserConfiguration : BaseEntityConfiguration<User>
 
     public static void ConfigureUser(EntityTypeBuilder<User> entity)
     {
+        entity.ToTable("Users");
         entity.Property(u => u.Username)
             .IsRequired()
             .HasMaxLength(100);
@@ -22,7 +24,7 @@ public class UserConfiguration : BaseEntityConfiguration<User>
             .IsRequired()
             .HasMaxLength(255);
 
-        entity.Property(u => u.Username)
+        entity.Property(u => u.FullName)
             .IsRequired()
             .HasMaxLength(100);
 
