@@ -10,6 +10,6 @@ public class Project: BaseEntity
     
     #region Navigation Properties
     public User Owner { get; set; } = null!;
-    public ICollection<Task> Tasks { get; set; } = new List<Task>();
+    public ICollection<ProjectTask> Tasks { get; set; } = new List<ProjectTask>();
     #endregion Navigation Properties
 }

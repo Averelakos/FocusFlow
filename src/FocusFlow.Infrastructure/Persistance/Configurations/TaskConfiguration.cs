@@ -1,19 +1,19 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-public class TaskConfiguration : BaseEntityConfiguration<Task>
+public class TaskConfiguration : BaseEntityConfiguration<ProjectTask>
 {
     public TaskConfiguration() : base()
     {
     }
 
-    public override void Configure(EntityTypeBuilder<Task> entity)
+    public override void Configure(EntityTypeBuilder<ProjectTask> entity)
     {
         base.Configure(entity);
         ConfigureTask(entity);
     }
 
-    public static void ConfigureTask(EntityTypeBuilder<Task> entity)
+    public static void ConfigureTask(EntityTypeBuilder<ProjectTask> entity)
     {   
         entity.ToTable("Tasks");
         entity.Property(p => p.Title)

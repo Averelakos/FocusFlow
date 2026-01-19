@@ -10,6 +10,7 @@ public static class DependencyInjection
     {
         // Add infrastructure services here
         services.AddDatabaseSqlServer(configuration);
+        services.AddRepositories();
         return services;
     }
 
@@ -24,5 +25,18 @@ public static class DependencyInjection
     {
         return services
         .AddDbContext<FocusFlowDbContext>(options => options.UseSqlServer(configuration.GetConnectionString("DefaultConnectionSqlServer")));
+    }
+
+    /// <summary>
+    /// Adds the repositories.
+    /// </summary>
+    /// <param name="services">The services.</param>
+    /// <returns></returns>
+    public static IServiceCollection AddRepositories(this IServiceCollection services)
+    {
+        // Register repositories here
+        services.AddTransient<IUserRepository, UserRepository>();
+        services.AddTransient<IProjectTaskRepository, ProjectTaskRepository>();
+        return services;
     }
 }

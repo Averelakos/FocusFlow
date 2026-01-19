@@ -1,4 +1,4 @@
-public class Task : BaseEntity
+public class ProjectTask : BaseEntity
 {
     #region Properties
     public string Title { get; set; } = string.Empty;

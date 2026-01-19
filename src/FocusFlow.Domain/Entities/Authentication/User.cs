@@ -9,6 +9,6 @@ public class User : BaseEntity
     #endregion Properties
     #region Navigation Properties
     public ICollection<Project> OwnedProjects { get; set; } = new List<Project>();
-    public ICollection<Task> AssignedTasks { get; set; } = new List<Task>();
+    public ICollection<ProjectTask> AssignedTasks { get; set; } = new List<ProjectTask>();
     #endregion Navigation Properties
 }

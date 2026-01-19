@@ -1,0 +1,17 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+
+public class ProjectTaskRepository : BaseRepository<ProjectTask>, IProjectTaskRepository
+{
+    public ProjectTaskRepository(FocusFlowDbContext context, ILogger<ProjectTaskRepository> logger)
+        : base(logger, context)
+    {
+    }
+
+    protected override IQueryable<ProjectTask> SetWithIncludes()
+    {
+        return base.SetWithIncludes()
+        .Include(x => x.Project)
+        .Include(x => x.AssignedTo);
+    }
+}
