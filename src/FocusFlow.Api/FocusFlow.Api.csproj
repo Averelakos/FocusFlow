@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.2" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.12" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.1.0" />
   </ItemGroup>
@@ -14,6 +15,7 @@
   <ItemGroup>
     <ProjectReference Include="..\FocusFlow.Application\FocusFlow.Application.csproj" />
     <ProjectReference Include="..\FocusFlow.Infrastructure\FocusFlow.Infrastructure.csproj" />
+    <!-- <ProjectReference Include="..\FocusFlow.Client\FocusFlow.Client.csproj" /> -->
   </ItemGroup>
 
 </Project>

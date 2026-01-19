@@ -5,11 +5,23 @@ public static class ServiceCollectionExtension
     public static void AddServices(this IServiceCollection services, IConfiguration configuration)
     {
         // Register your services here
-        services.AddControllers();
+        services.AddControllersWithViews();
+        services.AddRazorPages();
         services.AddProjects(configuration);
         services.AddOpenApi(options =>
         {
            options.OpenApiVersion = Microsoft.OpenApi.OpenApiSpecVersion.OpenApi3_0;
+        });
+        
+        // Add CORS
+        services.AddCors(options =>
+        {
+            options.AddPolicy("AllowBlazorClient", policy =>
+            {
+                policy.WithOrigins("http://localhost:5103", "https://localhost:7028")
+                      .AllowAnyMethod()
+                      .AllowAnyHeader();
+            });
         });
     }
 

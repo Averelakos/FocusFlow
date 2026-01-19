@@ -9,20 +9,12 @@ public class ProjectController : BaseApiController
         _authService = authService;
     }
 
-    [HttpPost("Register")]
-    public async Task<IActionResult> Register([FromBody] RegisterDto request, CancellationToken ct)
+    [HttpGet("Test")]
+    public async Task<IActionResult> Test()
     {
         // Registration logic here
-        var token = await _authService.RegisterAsync(request, ct);
-        return Ok(new { token });
-    }
-
-    [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginDto request, CancellationToken ct)
-    {
-        // Authenticate user
-        var token = await _authService.LoginAsync(request, ct);
-        return Ok(new { token });
+        
+        return Ok(new { token = "test" });
     }
     
 }
