@@ -5,8 +5,7 @@ public static class ServiceCollectionExtension
     public static void AddServices(this IServiceCollection services, IConfiguration configuration)
     {
         // Register your services here
-        services.AddControllersWithViews();
-        services.AddRazorPages();
+        services.AddControllers();
         services.AddProjects(configuration);
         services.AddOpenApi(options =>
         {
@@ -14,15 +13,21 @@ public static class ServiceCollectionExtension
         });
         
         // Add CORS
-        services.AddCors(options =>
+        services.AddCors(options => options.AddDefaultPolicy(builder =>
         {
-            options.AddPolicy("AllowBlazorClient", policy =>
-            {
-                policy.WithOrigins("http://localhost:5103", "https://localhost:7028")
-                      .AllowAnyMethod()
-                      .AllowAnyHeader();
-            });
-        });
+            builder.WithOrigins("http://localhost:5103", "https://localhost:7028")
+                            .AllowAnyHeader()
+                            .AllowAnyMethod();
+        }));
+        // services.AddCors(options =>
+        // {
+        //     options.AddPolicy("AllowBlazorClient", policy =>
+        //     {
+        //         policy.WithOrigins("http://localhost:5103", "https://localhost:7028")
+        //               .AllowAnyMethod()
+        //               .AllowAnyHeader();
+        //     });
+        // });
     }
 
     public static void AddProjects(this IServiceCollection services, IConfiguration configuration)

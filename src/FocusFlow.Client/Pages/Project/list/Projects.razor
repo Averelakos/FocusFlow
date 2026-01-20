@@ -1,0 +1,111 @@
+@page "/projects"
+@using FocusFlow.Client.Services
+@inject ProjectClientService ProjectClientService
+
+<header class="page-header">
+    <nav class="breadcrumbs">
+        <div class="breadcrumb-item">Projects</div> 
+    </nav>
+    <div class="btns-group">
+        <button class="btn-expanded" type="button">
+            <i class="fa-solid fa-plus"></i>
+            <span>New Project</span>
+        </button>
+    </div>
+</header>
+
+<div class="table-wrapper">
+    <table class="table">
+        <thead>
+            <tr>
+                <th class="col-head">
+                    <div class="col-header-content">
+                        <i class="fa-solid fa-key"></i>
+                        <span class="txt">Id</span>
+                    </div>
+                </th>
+                <th class="col-head">
+                    <div class="col-header-content">
+                        <i class="fa-solid fa-t"></i>
+                        <span class="txt">Name</span>
+                    </div>
+                </th>
+            </tr>
+        </thead>
+        @if (projects is null)
+        {
+            <p><em>Loading...</em></p>
+        }
+        else
+        {
+        <tbody>
+            <tr class="row-content">
+                <td class="col-field">
+                    <span>15</span>
+                </td>
+                <td class="col-field">
+                    <span>Test</span>
+                </td>
+            </tr>
+        </tbody>
+        }
+    </table>
+</div>
+
+@* @if (projects is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <DeleteGame Game="@currentGame" OnClose="@OnDeleteModalCloseAsync">
+    </DeleteGame>
+
+    <table class="table table-striped table-bordered table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var project in projects)
+            {
+                <tr>
+                    <td>@project.Id</td>
+                    <td>@project.Name</td>
+                    <td>
+                        <button class="btn btn-primary" @onclick="(() => EditProject(project.Id))"><i
+                        class="oi oi-pencil"></i></button>
+                        <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal"
+                    @onclick="(() => currentProject = project)"><i class="oi oi-x"></i></button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+} *@
+
+@code {
+    private List<ProjectSimpleDto>? projects;
+    private ProjectSimpleDto? currentProject;
+
+    protected override async Task OnInitializedAsync()
+    {
+        projects = await ProjectClientService.GetAll();
+    }
+
+    private void EditProject(long projectId)
+    {
+        // NavigationManager.NavigateTo($"/editproject/{projectId}");
+    }
+
+    @* private async Task OnDeleteModalCloseAsync(bool isDeleted)
+    {
+        if (isDeleted)
+        {
+            projects = await ProjectClientService.GetAll();
+            StateHasChanged();
+        }
+    } *@
+}

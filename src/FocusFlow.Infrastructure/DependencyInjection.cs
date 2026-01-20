@@ -42,6 +42,7 @@ public static class DependencyInjection
     {
         // Register repositories here
         services.AddTransient<IUserRepository, UserRepository>();
+        services.AddTransient<IProjectRepository, ProjectRepository>();
         services.AddTransient<IProjectTaskRepository, ProjectTaskRepository>();
         return services;
     }
