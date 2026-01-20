@@ -9,7 +9,7 @@ public static class DependencyInjection
     public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
     {
         // Add infrastructure services here
-        services.AddDatabaseSqlServer(configuration);
+        services.AddDatabaseSqlite(configuration);
         services.AddRepositories();
         services.AddServices();
         return services;
@@ -17,15 +17,20 @@ public static class DependencyInjection
 
     /// <summary>
     /// Adds the Db context and sets the option
-    /// for the server to connecto to database in sql server
+    /// for the server to connect to SQLite database
     /// </summary>
     /// <param name="services"></param>
     /// <param name="configuration"></param>
     /// <returns>services</returns>
-    public static IServiceCollection AddDatabaseSqlServer(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddDatabaseSqlite(this IServiceCollection services, IConfiguration configuration)
     {
         return services
-        .AddDbContext<FocusFlowDbContext>(options => options.UseSqlServer(configuration.GetConnectionString("DefaultConnectionSqlServer")));
+        .AddDbContext<FocusFlowDbContext>(options => 
+        {
+            options.UseSqlite(configuration.GetConnectionString("DefaultConnection"));
+            options.ConfigureWarnings(warnings => 
+                warnings.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
+        });
     }
 
     /// <summary>
