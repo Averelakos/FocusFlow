@@ -1,4 +1,4 @@
-.navbar-toggler {
+/* .navbar-toggler {
     background-color: rgba(255, 255, 255, 0.1);
 }
 
@@ -72,12 +72,76 @@
 
     .collapse {
         /* Never collapse the sidebar for wide screens */
-        display: block;
-    }
+        /* display: block;
+    } */
 
-    .nav-scrollable {
+    /* .nav-scrollable { */
         /* Allow sidebar to scroll for tall menus */
-        height: calc(100vh - 3.5rem);
+        /* height: calc(100vh - 3.5rem);
         overflow-y: auto;
-    }
+    } */
+/* } */ 
+
+.main-menu {
+  flex-grow: 1;
+  justify-content: flex-start;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overflow-y: overlay;
+  margin-top: 34px;
+  margin-bottom: 30px;
+}
+.main-menu {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* justify-content: center; */
+  row-gap: 20px;
+  font-size: 16px;
+  color: #1a1a24;
+}
+
+::deep a {
+  position: relative;
+  outline: 0;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  text-align: center;
+  justify-content: center;
+  -webkit-user-select: none;
+  user-select: none;
+  color: inherit;
+  min-width: 45px;
+  min-height: 45px;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  transition: background 0.15s,border 0.15s;
+}
+
+i {
+  /* font-family: remixicon !important; */
+  font-style: normal;
+  /* font-weight: 400; */
+  font-size: 1.5rem;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: #1a1a24;
+}
+
+ ::deep a.active {
+  background: #ffffff;
+  border-color: #1a1a24;
+}
+
+ ::deep a:hover {
+  background-color: #e3e8ed;
+  color: #1a1a24;
+}
+
+ ::deep a.active:hover {
+  background-color: #ffffff;
+  border-color: #1a1a24;
 }

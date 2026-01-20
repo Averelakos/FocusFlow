@@ -1,0 +1,37 @@
+﻿@if (isMenuOpen)
+{
+    <div class="menu-backdrop" @onclick="CloseMenu"></div>
+}
+
+<div tabindex="0" role="button" aria-label="Logged superuser menu" class="thumb thumb-circle link-hint" title="test@example.com" aria-expanded="@isMenuOpen" @onclick="ToggleMenu" @onclick:stopPropagation="true">
+    <span class="initials">T</span> 
+    <div class="toggler-container @(isMenuOpen ? "active" : "")" tabindex="-1" role="menu" @onclick:stopPropagation="true">
+        <a href="/profile" class="menu-item">
+            <i class="fa-solid fa-user"></i>
+            <span>Profile</span>
+        </a>
+        <a href="/settings" class="menu-item">
+            <i class="fa-solid fa-gear"></i>
+            <span>Settings</span>
+        </a>
+        <hr />
+        <a href="/logout" class="menu-item">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            <span>Logout</span>
+        </a>
+    </div>
+</div>
+
+@code {
+    private bool isMenuOpen = false;
+
+    private void ToggleMenu()
+    {
+        isMenuOpen = !isMenuOpen;
+    }
+
+    private void CloseMenu()
+    {
+        isMenuOpen = false;
+    }
+}

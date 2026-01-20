@@ -1,16 +1,16 @@
-﻿@inherits LayoutComponentBase
-<div class="page">
-    <div class="sidebar">
+﻿@using FocusFlow.Client.Layout.Components.NavMenu
+@using FocusFlow.Client.Layout.Components.UserMenu
+@inherits LayoutComponentBase
+
+<div class="app-layout">
+    <aside class="app-sidebar">
+        <a href="#/" class="logo logo-sm"><img src="./images/logo.svg" alt="PocketBase logo" width="40" height="40"></a>
         <NavMenu />
-    </div>
-
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
-
-        <article class="content px-4">
+        <UserMenu />
+    </aside>
+    <div class="page-wrapper">
+        <main class="page-content">
             @Body
-        </article>
-    </main>
+        </main>
+    </div>
 </div>

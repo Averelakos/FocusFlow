@@ -1,0 +1,33 @@
+.page-header {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  width: 100%;
+  min-height: 40px;
+  gap: 15px;
+  margin: 0 0 30px;
+}
+
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  color: #a0a6ac;
+}
+
+.breadcrumbs .breadcrumb-item:last-child {
+  word-break: break-word;
+  color: #1a1a24;
+}
+
+.breadcrumbs .breadcrumb-item {
+  position: relative;
+  margin: 0;
+  line-height: 1;
+  font-weight: 400;
+}
+
+.breadcrumbs .breadcrumb-item {
+  font-size: 20px;
+  line-height: 26px;
+}

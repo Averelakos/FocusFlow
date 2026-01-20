@@ -1,0 +1,38 @@
+@page "/projects"
+@using FocusFlow.Client.Services
+@inject ApiService ApiService
+
+<header class="page-header">
+    <nav class="breadcrumbs">
+        <div class="breadcrumb-item">Projects</div> 
+    </nav>
+</header>
+
+@if (isLoading)
+{
+    <p>Loading...</p>
+}
+else if (projects == null || !projects.Any())
+{
+    <p>No projects found.</p>
+}
+else
+{
+    <ul>
+        @foreach (var project in projects)
+        {
+            <li>@project.Name - @project.Description</li>
+        }
+    </ul>
+}
+
+@code {
+    private List<ProjectDto>? projects;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var token  = await ApiService.TestApiAsync();
+        isLoading = false;
+    }
+}
