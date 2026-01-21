@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 using FocusFlow.Client.Core.Models.ProjectTasks;
+using FocusFlow.Client.Core.Models.Enums;
 
 namespace FocusFlow.Client.Services;
 
@@ -12,11 +13,24 @@ public class ProjectTaskClientService
         _httpClient = httpClient;
     }
 
-    public async Task<List<ProjectTaskSimpleDto>?> GetAll()
+    public async Task<List<ProjectTaskSimpleDto>?> GetAll(long? projectId = null, ProjectTaskStatus? status = null, ProjectTaskPriority? priority = null)
     {
         try
         {
-            return await _httpClient.GetFromJsonAsync<List<ProjectTaskSimpleDto>>("api/projecttask/getall");
+            var queryParams = new List<string>();
+            
+            if (projectId.HasValue)
+                queryParams.Add($"projectId={projectId.Value}");
+            
+            if (status.HasValue)
+                queryParams.Add($"status={status.Value}");
+            
+            if (priority.HasValue)
+                queryParams.Add($"priority={priority.Value}");
+            
+            var queryString = queryParams.Count > 0 ? "?" + string.Join("&", queryParams) : "";
+            
+            return await _httpClient.GetFromJsonAsync<List<ProjectTaskSimpleDto>>($"api/projecttask/getall{queryString}");
         }
         catch (Exception ex)
         {

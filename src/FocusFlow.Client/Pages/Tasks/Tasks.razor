@@ -1,5 +1,6 @@
 @page "/tasks"
 @attribute [Authorize]
+@using FocusFlow.Client.Core.Models.Projects
 @using Microsoft.AspNetCore.Authorization
 @using FocusFlow.Client.Services
 @using FocusFlow.Client.Core.Models.ProjectTasks
@@ -26,6 +27,51 @@
             </div>
         </div>
     </header>
+
+    <div class="filters-section">
+        <div class="filter-group">
+            <label for="projectFilter">Project</label>
+            <select id="projectFilter" class="filter-select" @onchange="OnProjectFilterChanged">
+                <option value="">All Projects</option>
+                @if (projects != null)
+                {
+                    foreach (var project in projects)
+                    {
+                        <option value="@project.Id">@project.Name</option>
+                    }
+                }
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label for="statusFilter">Status</label>
+            <select id="statusFilter" class="filter-select" @onchange="OnStatusFilterChanged">
+                <option value="">All Statuses</option>
+                <option value="@ProjectTaskStatus.Todo">To Do</option>
+                <option value="@ProjectTaskStatus.InProgress">In Progress</option>
+                <option value="@ProjectTaskStatus.Done">Done</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label for="priorityFilter">Priority</label>
+            <select id="priorityFilter" class="filter-select" @onchange="OnPriorityFilterChanged">
+                <option value="">All Priorities</option>
+                <option value="@ProjectTaskPriority.Low">Low</option>
+                <option value="@ProjectTaskPriority.Medium">Medium</option>
+                <option value="@ProjectTaskPriority.High">High</option>
+                <option value="@ProjectTaskPriority.Critical">Critical</option>
+            </select>
+        </div>
+
+        @if (selectedProjectId.HasValue || selectedStatus.HasValue || selectedPriority.HasValue)
+        {
+            <button class="btn-clear-filters" @onclick="ClearFilters">
+                <i class="fa-solid fa-times"></i>
+                Clear Filters
+            </button>
+        }
+    </div>
 
     <div class="content-section">
         @if (tasks is null)
@@ -160,24 +206,30 @@
 
 @code {
     private List<ProjectTaskSimpleDto>? tasks;
+    private List<ProjectSimpleDto>? projects;
     private Dictionary<long, ProjectTaskDetailDto> detailedTasks = new();
     private bool showCreatePanel = false;
     private bool showEditPanel = false;
     private bool showDetailPanel = false;
     private long? selectedTaskId;
+    private long? selectedProjectId;
+    private ProjectTaskStatus? selectedStatus;
+    private ProjectTaskPriority? selectedPriority;
 
     protected override async Task OnInitializedAsync()
     {
+        projects = await ProjectClientService.GetAll();
         await LoadTasks();
     }
 
     private async Task LoadTasks()
     {
-        tasks = await ProjectTaskClientService.GetAll();
+        tasks = await ProjectTaskClientService.GetAll(selectedProjectId, selectedStatus, selectedPriority);
         
         // Load detailed info for assigned users
         if (tasks != null)
         {
+            detailedTasks.Clear();
             foreach (var task in tasks)
             {
                 var detailedTask = await ProjectTaskClientService.GetById(task.Id);
@@ -188,6 +240,32 @@
             }
             StateHasChanged();
         }
+    }
+
+    private async Task OnProjectFilterChanged(ChangeEventArgs e)
+    {
+        selectedProjectId = long.TryParse(e.Value?.ToString(), out var id) ? id : null;
+        await LoadTasks();
+    }
+
+    private async Task OnStatusFilterChanged(ChangeEventArgs e)
+    {
+        selectedStatus = Enum.TryParse<ProjectTaskStatus>(e.Value?.ToString(), out var status) ? status : null;
+        await LoadTasks();
+    }
+
+    private async Task OnPriorityFilterChanged(ChangeEventArgs e)
+    {
+        selectedPriority = Enum.TryParse<ProjectTaskPriority>(e.Value?.ToString(), out var priority) ? priority : null;
+        await LoadTasks();
+    }
+
+    private async Task ClearFilters()
+    {
+        selectedProjectId = null;
+        selectedStatus = null;
+        selectedPriority = null;
+        await LoadTasks();
     }
 
     private void OpenCreatePanel()

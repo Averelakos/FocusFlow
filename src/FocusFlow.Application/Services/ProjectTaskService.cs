@@ -19,12 +19,22 @@ public class ProjectTaskService : IProjectTaskService
         return entity.ToProjectTaskDetailDto();
     }
 
-    public IEnumerable<ProjectTaskSimpleDto> GetAll()
+    public IEnumerable<ProjectTaskSimpleDto> GetAll(long? projectId = null, ProjectTaskStatus? status = null, ProjectTaskPriority? priority = null)
     {
-        return _projectTaskRepository
-        .Queryable()
-        .Select(pt => pt.ToProjectTaskSimpleDto())
-        .ToList();
+        var query = _projectTaskRepository.Queryable();
+
+        if (projectId.HasValue)
+            query = query.Where(pt => pt.ProjectId == projectId.Value);
+
+        if (status.HasValue)
+            query = query.Where(pt => pt.Status == status.Value);
+
+        if (priority.HasValue)
+            query = query.Where(pt => pt.Priority == priority.Value);
+
+        return query
+            .Select(pt => pt.ToProjectTaskSimpleDto())
+            .ToList();
     }
 
     public IEnumerable<ProjectTaskSimpleDto> GetByProjectId(long projectId)

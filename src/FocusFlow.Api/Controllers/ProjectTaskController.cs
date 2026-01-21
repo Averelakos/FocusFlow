@@ -11,9 +11,12 @@ public class ProjectTaskController : BaseApiController
 
     [HttpGet("Getall")]
     [AuthorizeJwt]
-    public async Task<ActionResult<List<ProjectTaskSimpleDto>>> GetAll()
+    public async Task<ActionResult<List<ProjectTaskSimpleDto>>> GetAll(
+        [FromQuery] long? projectId = null,
+        [FromQuery] ProjectTaskStatus? status = null,
+        [FromQuery] ProjectTaskPriority? priority = null)
     {
-        var projectTasks = _projectTaskService.GetAll();
+        var projectTasks = _projectTaskService.GetAll(projectId, status, priority);
         return Ok(projectTasks);
     }
 
