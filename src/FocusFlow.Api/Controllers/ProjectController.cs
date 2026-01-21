@@ -9,6 +9,9 @@ public class ProjectController : BaseApiController
         _projectService = projectService;
     }
 
+    /// <summary>
+    /// Gets all projects for the current user
+    /// </summary>
     [HttpGet("Getall")]
     [AuthorizeJwt]
     public async Task<ActionResult<List<ProjectSimpleDto>>> GetAll()
@@ -18,6 +21,9 @@ public class ProjectController : BaseApiController
         return Ok(projects);
     }
 
+    /// <summary>
+    /// Gets a lightweight list of projects for dropdowns (ID and Name only, cached for 24 hours)
+    /// </summary>
     [HttpGet("Lookup")]
     [AuthorizeJwt]
     public async Task<ActionResult<List<ProjectLookupDto>>> GetLookup()
@@ -26,6 +32,9 @@ public class ProjectController : BaseApiController
         return Ok(projects);
     }
 
+    /// <summary>
+    /// Gets a project by its ID with full details
+    /// </summary>
     [HttpGet("{id}")]
     [AuthorizeJwt]
     public async Task<ActionResult<ProjectDetailDto>> GetById(long id, CancellationToken ct)
@@ -34,6 +43,9 @@ public class ProjectController : BaseApiController
         return Ok(project);
     }
 
+    /// <summary>
+    /// Creates a new project and invalidates the lookup cache
+    /// </summary>
     [HttpPost("Create")]
     [AuthorizeJwt]
     public async Task<ActionResult<ProjectDetailDto>> Create([FromBody] CreateProjectDto request, CancellationToken ct)
@@ -42,6 +54,9 @@ public class ProjectController : BaseApiController
         return CreatedAtAction(nameof(Create), new { id = project.Id }, project);
     }
 
+    /// <summary>
+    /// Updates an existing project and invalidates the lookup cache
+    /// </summary>
     [HttpPut("Update")]
     [AuthorizeJwt]
     public async Task<ActionResult<ProjectDetailDto>> Update([FromBody] UpdateProjectDto request, CancellationToken ct)
@@ -50,6 +65,9 @@ public class ProjectController : BaseApiController
         return Ok(project);
     }
 
+    /// <summary>
+    /// Deletes a project by its ID and invalidates the lookup cache
+    /// </summary>
     [HttpDelete("Delete/{id}")]
     [AuthorizeJwt]
     public async Task<ActionResult> Delete(long id, CancellationToken ct)

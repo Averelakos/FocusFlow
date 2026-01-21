@@ -2,7 +2,6 @@ using System.Linq.Expressions;
 
 public interface IProjectRepository
 {
-    // Define methods for project repository here
     IQueryable<Project> Queryable();
     Task<Project?> GetAsync(long id, CancellationToken ct);
     Task<Project?> AddAsync(Project project, CancellationToken ct);

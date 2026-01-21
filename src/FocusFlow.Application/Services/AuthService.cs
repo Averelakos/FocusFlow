@@ -12,6 +12,12 @@ public class AuthService : IAuthService
         _tokenProviderService = tokenProviderService;
     }
     
+    /// <summary>
+    /// Registers a new user with username, email, and hashed password
+    /// </summary>
+    /// <param name="registerDto">The registration data containing user details</param>
+    /// <param name="ct">Cancellation token</param>
+    /// <returns>AuthResponse with success status and JWT token if successful</returns>
     public async Task<AuthResponse> RegisterAsync(RegisterDto registerDto, CancellationToken ct)
     {
        if (await UserExistsAsync(registerDto.Username, registerDto.Email, ct))
@@ -24,6 +30,12 @@ public class AuthService : IAuthService
        return new AuthResponse { Success = true, Token = _tokenProviderService.GenerateAccessToken(addedUser) };
     }
 
+    /// <summary>
+    /// Authenticates a user with username/email and password
+    /// </summary>
+    /// <param name="loginDto">The login credentials (username or email and password)</param>
+    /// <param name="ct">Cancellation token</param>
+    /// <returns>AuthResponse with success status and JWT token if credentials are valid</returns>
     public async Task<AuthResponse> LoginAsync(LoginDto loginDto, CancellationToken ct)
     {
         bool isEmail = loginDto.UsernameOrEmail.IsEmail();
@@ -56,7 +68,13 @@ public class AuthService : IAuthService
         return new AuthResponse { Success = true, Token = _tokenProviderService.GenerateAccessToken(user) };
     }
 
-
+    /// <summary>
+    /// Checks if a user with the given username or email already exists
+    /// </summary>
+    /// <param name="username">The username to check</param>
+    /// <param name="email">The email to check</param>
+    /// <param name="ct">Cancellation token</param>
+    /// <returns>True if a user with the username or email exists</returns>
     public async Task<bool> UserExistsAsync(string? username, string? email, CancellationToken ct)
     {
         if (string.IsNullOrEmpty(email))

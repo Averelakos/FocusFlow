@@ -12,6 +12,9 @@ public class ProjectClientService
         _httpClient = httpClient;
     }
 
+    /// <summary>
+    /// Gets all projects for the current user
+    /// </summary>
     public async Task<List<ProjectSimpleDto>?> GetAll()
     {
         try
@@ -25,6 +28,9 @@ public class ProjectClientService
         }
     }
 
+    /// <summary>
+    /// Gets a lightweight list of projects for dropdowns (ID and Name only, cached on server)
+    /// </summary>
     public async Task<List<ProjectLookupDto>?> GetLookup()
     {
         try
@@ -38,6 +44,9 @@ public class ProjectClientService
         }
     }
 
+    /// <summary>
+    /// Gets a project by its ID with full details
+    /// </summary>
     public async Task<ProjectDetailDto?> GetById(long id)
     {
         try
@@ -51,6 +60,9 @@ public class ProjectClientService
         }
     }
 
+    /// <summary>
+    /// Creates a new project
+    /// </summary>
     public async Task<ProjectDetailDto?> CreateAsync(CreateProjectDto createDto)
     {
         try
@@ -66,6 +78,9 @@ public class ProjectClientService
         }
     }
 
+    /// <summary>
+    /// Updates an existing project
+    /// </summary>
     public async Task<ProjectDetailDto?> UpdateAsync(UpdateProjectDto updateDto)
     {
         try
@@ -81,6 +96,9 @@ public class ProjectClientService
         }
     }
 
+    /// <summary>
+    /// Deletes a project by its ID
+    /// </summary>
     public async Task<bool> DeleteAsync(long id)
     {
         try

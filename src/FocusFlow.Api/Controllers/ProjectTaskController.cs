@@ -9,6 +9,12 @@ public class ProjectTaskController : BaseApiController
         _projectTaskService = projectTaskService;
     }
 
+    /// <summary>
+    /// Gets all project tasks with optional filtering
+    /// </summary>
+    /// <param name="projectId">Optional project ID to filter by</param>
+    /// <param name="status">Optional status to filter by (Todo, InProgress, Done)</param>
+    /// <param name="priority">Optional priority to filter by (Low, Medium, High, Critical)</param>
     [HttpGet("Getall")]
     [AuthorizeJwt]
     public async Task<ActionResult<List<ProjectTaskSimpleDto>>> GetAll(
@@ -20,6 +26,9 @@ public class ProjectTaskController : BaseApiController
         return Ok(projectTasks);
     }
 
+    /// <summary>
+    /// Gets overall task statistics (total, completed, overdue, in progress, to-do)
+    /// </summary>
     [HttpGet("Statistics")]
     [AuthorizeJwt]
     public async Task<ActionResult<ProjectTaskStatisticsDto>> GetStatistics()
@@ -28,6 +37,9 @@ public class ProjectTaskController : BaseApiController
         return Ok(statistics);
     }
 
+    /// <summary>
+    /// Gets task statistics grouped by project
+    /// </summary>
     [HttpGet("Statistics/ByProject")]
     [AuthorizeJwt]
     public async Task<ActionResult<List<ProjectStatisticsDto>>> GetProjectStatistics()
@@ -36,6 +48,9 @@ public class ProjectTaskController : BaseApiController
         return Ok(statistics);
     }
 
+    /// <summary>
+    /// Gets all tasks for a specific project
+    /// </summary>
     [HttpGet("Project/{projectId}")]
     [AuthorizeJwt]
     public async Task<ActionResult<List<ProjectTaskSimpleDto>>> GetByProjectId(long projectId)
@@ -44,6 +59,9 @@ public class ProjectTaskController : BaseApiController
         return Ok(projectTasks);
     }
 
+    /// <summary>
+    /// Gets a project task by its ID with full details
+    /// </summary>
     [HttpGet("{id}")]
     [AuthorizeJwt]
     public async Task<ActionResult<ProjectTaskDetailDto>> GetById(long id, CancellationToken ct)
@@ -52,6 +70,9 @@ public class ProjectTaskController : BaseApiController
         return Ok(projectTask);
     }
 
+    /// <summary>
+    /// Creates a new project task and broadcasts notification via SignalR
+    /// </summary>
     [HttpPost("Create")]
     [AuthorizeJwt]
     public async Task<ActionResult<ProjectTaskDetailDto>> Create([FromBody] CreateProjectTaskDto request, CancellationToken ct)
@@ -60,6 +81,9 @@ public class ProjectTaskController : BaseApiController
         return CreatedAtAction(nameof(Create), new { id = projectTask.Id }, projectTask);
     }
 
+    /// <summary>
+    /// Updates an existing project task and broadcasts notification via SignalR
+    /// </summary>
     [HttpPut("Update")]
     [AuthorizeJwt]
     public async Task<ActionResult<ProjectTaskDetailDto>> Update([FromBody] UpdateProjectTaskDto request, CancellationToken ct)
@@ -68,6 +92,9 @@ public class ProjectTaskController : BaseApiController
         return Ok(projectTask);
     }
 
+    /// <summary>
+    /// Deletes a project task by its ID and broadcasts notification via SignalR
+    /// </summary>
     [HttpDelete("Delete/{id}")]
     [AuthorizeJwt]
     public async Task<ActionResult> Delete(long id, CancellationToken ct)

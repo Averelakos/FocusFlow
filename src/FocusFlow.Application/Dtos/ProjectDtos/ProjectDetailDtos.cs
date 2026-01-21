@@ -7,6 +7,4 @@ public record ProjectDetailDto : ProjectSimpleDto
     public DateTime? UpdatedAt { get; init; }
     public DateTime? StartDate { get; set; }
     public DateTime? EndDate { get; set; }
-
-    // public List<ProjectTaskDto> Tasks { get; init; } = new();
 }

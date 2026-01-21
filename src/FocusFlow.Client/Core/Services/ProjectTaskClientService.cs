@@ -13,6 +13,9 @@ public class ProjectTaskClientService
         _httpClient = httpClient;
     }
 
+    /// <summary>
+    /// Gets all project tasks with optional filtering by project, status, and priority
+    /// </summary>
     public async Task<List<ProjectTaskSimpleDto>?> GetAll(long? projectId = null, ProjectTaskStatus? status = null, ProjectTaskPriority? priority = null)
     {
         try
@@ -39,6 +42,9 @@ public class ProjectTaskClientService
         }
     }
 
+    /// <summary>
+    /// Gets all tasks for a specific project
+    /// </summary>
     public async Task<List<ProjectTaskSimpleDto>?> GetByProjectId(long projectId)
     {
         try
@@ -52,6 +58,9 @@ public class ProjectTaskClientService
         }
     }
 
+    /// <summary>
+    /// Gets a project task by its ID with full details
+    /// </summary>
     public async Task<ProjectTaskDetailDto?> GetById(long id)
     {
         try
@@ -65,6 +74,9 @@ public class ProjectTaskClientService
         }
     }
 
+    /// <summary>
+    /// Creates a new project task
+    /// </summary>
     public async Task<ProjectTaskDetailDto?> CreateAsync(CreateProjectTaskDto createDto)
     {
         try
@@ -80,6 +92,9 @@ public class ProjectTaskClientService
         }
     }
 
+    /// <summary>
+    /// Updates an existing project task
+    /// </summary>
     public async Task<ProjectTaskDetailDto?> UpdateAsync(UpdateProjectTaskDto updateDto)
     {
         try
@@ -95,6 +110,9 @@ public class ProjectTaskClientService
         }
     }
 
+    /// <summary>
+    /// Deletes a project task by its ID
+    /// </summary>
     public async Task<bool> DeleteAsync(long id)
     {
         try
@@ -109,6 +127,9 @@ public class ProjectTaskClientService
         }
     }
 
+    /// <summary>
+    /// Gets overall task statistics (total, completed, overdue, in progress, to-do)
+    /// </summary>
     public async Task<ProjectTaskStatisticsDto?> GetStatistics()
     {
         try
@@ -122,6 +143,9 @@ public class ProjectTaskClientService
         }
     }
 
+    /// <summary>
+    /// Gets task statistics grouped by project
+    /// </summary>
     public async Task<List<ProjectStatisticsDto>?> GetProjectStatistics()
     {
         try

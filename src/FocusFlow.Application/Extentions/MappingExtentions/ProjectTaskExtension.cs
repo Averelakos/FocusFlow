@@ -1,5 +1,11 @@
+
 public static class ProjectTaskExtensions
 {
+    /// <summary>
+    /// Converts a ProjectTask entity to a detailed DTO with full information
+    /// </summary>
+    /// <param name="entity">The project task entity to convert</param>
+    /// <returns>ProjectTaskDetailDto with complete task information including project and assignee details</returns>
     public static ProjectTaskDetailDto ToProjectTaskDetailDto(this ProjectTask entity)
     {
         return new ProjectTaskDetailDto
@@ -20,6 +26,11 @@ public static class ProjectTaskExtensions
         };
     }
 
+    /// <summary>
+    /// Converts a ProjectTask entity to a simple DTO with basic information
+    /// </summary>
+    /// <param name="entity">The project task entity to convert</param>
+    /// <returns>ProjectTaskSimpleDto with ID, title, description, project ID, due date, status, and priority</returns>
     public static ProjectTaskSimpleDto ToProjectTaskSimpleDto(this ProjectTask entity)
     {
         return new ProjectTaskSimpleDto
@@ -34,6 +45,11 @@ public static class ProjectTaskExtensions
         };
     }
 
+    /// <summary>
+    /// Converts a CreateProjectTaskDto to a ProjectTask entity
+    /// </summary>
+    /// <param name="dto">The create project task data transfer object</param>
+    /// <returns>ProjectTask entity with data from the DTO</returns>
     public static ProjectTask ToEntity(this CreateProjectTaskDto dto)
     {
         return new ProjectTask

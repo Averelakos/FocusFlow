@@ -2,7 +2,6 @@ using System.Linq.Expressions;
 
 public interface IUserRepository
 {
-    // Define methods for user repository here
     IQueryable<User> Queryable();
     Task<User?> GetAsync(long id, CancellationToken ct);
     Task<User?> GetByParameterAsync(Expression<Func<User, bool>> predicate, CancellationToken ct);

@@ -14,6 +14,9 @@ public class ProjectTaskService : IProjectTaskService
         _hubContext = hubContext;
     }
 
+    /// <summary>
+    /// Gets a project task by its ID with full details
+    /// </summary>
     public async Task<ProjectTaskDetailDto> GetProjectTaskById(long id, CancellationToken ct)
     {
         var entity = await _projectTaskRepository.GetAsync(id, ct);
@@ -24,6 +27,9 @@ public class ProjectTaskService : IProjectTaskService
         return entity.ToProjectTaskDetailDto();
     }
 
+    /// <summary>
+    /// Gets all project tasks with optional filtering by project, status, and priority
+    /// </summary>
     public IEnumerable<ProjectTaskSimpleDto> GetAll(long? projectId = null, ProjectTaskStatus? status = null, ProjectTaskPriority? priority = null)
     {
         var query = _projectTaskRepository.Queryable();
@@ -42,6 +48,9 @@ public class ProjectTaskService : IProjectTaskService
             .ToList();
     }
 
+    /// <summary>
+    /// Gets all tasks for a specific project
+    /// </summary>
     public IEnumerable<ProjectTaskSimpleDto> GetByProjectId(long projectId)
     {
         return _projectTaskRepository
@@ -51,6 +60,9 @@ public class ProjectTaskService : IProjectTaskService
         .ToList();
     }
 
+    /// <summary>
+    /// Gets overall task statistics including total, completed, overdue, in progress, and to-do counts
+    /// </summary>
     public ProjectTaskStatisticsDto GetStatistics()
     {
         var now = DateTime.UtcNow;
@@ -66,6 +78,9 @@ public class ProjectTaskService : IProjectTaskService
         };
     }
 
+    /// <summary>
+    /// Gets task statistics grouped by project
+    /// </summary>
     public IEnumerable<ProjectStatisticsDto> GetProjectStatistics()
     {
         var now = DateTime.UtcNow;
@@ -87,6 +102,9 @@ public class ProjectTaskService : IProjectTaskService
         return tasksByProject;
     }
 
+    /// <summary>
+    /// Creates a new project task and notifies all connected clients via SignalR
+    /// </summary>
     public async Task<ProjectTaskDetailDto> CreateAsync(CreateProjectTaskDto request, CancellationToken ct)
     {
         var userId = _currentUserService.GetUserId();
@@ -115,6 +133,9 @@ public class ProjectTaskService : IProjectTaskService
         return projectTaskWithIncludes.ToProjectTaskDetailDto();
     }
 
+    /// <summary>
+    /// Updates an existing project task and notifies all connected clients via SignalR
+    /// </summary>
     public async Task<ProjectTaskDetailDto> UpdateAsync(UpdateProjectTaskDto request, CancellationToken ct)
     {
         var userId = _currentUserService.GetUserId();
@@ -150,6 +171,9 @@ public class ProjectTaskService : IProjectTaskService
         return entity.ToProjectTaskDetailDto();
     }
 
+    /// <summary>
+    /// Deletes a project task and notifies all connected clients via SignalR
+    /// </summary>
     public async Task DeleteAsync(long id, CancellationToken ct)
     {
         var userId = _currentUserService.GetUserId();

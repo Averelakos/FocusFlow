@@ -2,14 +2,18 @@ using Microsoft.AspNetCore.SignalR.Client;
 
 namespace FocusFlow.Client.Core.Services;
 
-public class TaskHubService : IAsyncDisposable
-{
     private readonly HubConnection _hubConnection;
 
+    /// <summary>Event raised when a task is created</summary>
     public event Func<long, Task>? TaskCreated;
+    /// <summary>Event raised when a task is updated</summary>
     public event Func<long, Task>? TaskUpdated;
+    /// <summary>Event raised when a task is deleted</summary>
     public event Func<long, Task>? TaskDeleted;
 
+    /// <summary>
+    /// Initializes the SignalR connection and registers event handlers
+    /// </summary>
     public TaskHubService()
     {
         _hubConnection = new HubConnectionBuilder()
@@ -40,6 +44,9 @@ public class TaskHubService : IAsyncDisposable
         });
     }
 
+    /// <summary>
+    /// Starts the SignalR connection if disconnected
+    /// </summary>
     public async Task StartAsync()
     {
         if (_hubConnection.State == HubConnectionState.Disconnected)
@@ -56,6 +63,9 @@ public class TaskHubService : IAsyncDisposable
         }
     }
 
+    /// <summary>
+    /// Stops the SignalR connection if connected
+    /// </summary>
     public async Task StopAsync()
     {
         if (_hubConnection.State == HubConnectionState.Connected)
@@ -64,6 +74,9 @@ public class TaskHubService : IAsyncDisposable
         }
     }
 
+    /// <summary>
+    /// Disposes the SignalR connection
+    /// </summary>
     public async ValueTask DisposeAsync()
     {
         await _hubConnection.DisposeAsync();

@@ -14,6 +14,9 @@ public class ProjectService : IProjectService
         _cache = cache;
     }
 
+    /// <summary>
+    /// Gets a project by its ID with full details
+    /// </summary>
     public async Task<ProjectDetailDto> GetProjectById(long id, CancellationToken ct)
     {
         var entity = await _projectRepository.GetAsync(id, ct);
@@ -55,6 +58,9 @@ public class ProjectService : IProjectService
         return lookup;
     }
 
+    /// <summary>
+    /// Creates a new project and invalidates the lookup cache
+    /// </summary>
     public async Task<ProjectDetailDto> CreateAsync(CreateProjectDto request, CancellationToken ct)
     {
         var userId = _currentUserService.GetUserId();
@@ -77,6 +83,9 @@ public class ProjectService : IProjectService
         return projectWithIncludes.ToProjectDetailDto();
     }
 
+    /// <summary>
+    /// Updates an existing project and invalidates the lookup cache
+    /// </summary>
     public async Task<ProjectDetailDto> UpdateAsync(UpdateProjectDto request, CancellationToken ct)
     {
         var userId = _currentUserService.GetUserId();
@@ -105,6 +114,9 @@ public class ProjectService : IProjectService
         return entity.ToProjectDetailDto();
     }
 
+    /// <summary>
+    /// Deletes a project and invalidates the lookup cache
+    /// </summary>
     public async Task DeleteAsync(long id, CancellationToken ct)
     {
         var userId = _currentUserService.GetUserId();
