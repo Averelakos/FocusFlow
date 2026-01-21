@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace FocusFlow.Infrastructure.Persistance.Migrations
+namespace FocusFlow.Infrastructure.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration
@@ -15,17 +15,17 @@ namespace FocusFlow.Infrastructure.Persistance.Migrations
                 name: "Users",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Username = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    Email = table.Column<string>(type: "TEXT", maxLength: 255, nullable: false),
-                    FullName = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    PasswordHash = table.Column<byte[]>(type: "BLOB", nullable: false),
-                    PasswordSalt = table.Column<byte[]>(type: "BLOB", nullable: false),
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Username = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    FullName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    PasswordHash = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
+                    PasswordSalt = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
                     Created = table.Column<DateTime>(type: "datetime2(7)", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    CreatedById = table.Column<long>(type: "INTEGER", nullable: true),
+                    CreatedById = table.Column<long>(type: "bigint", nullable: true),
                     LastUpdated = table.Column<DateTime>(type: "datetime2(7)", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    LastUpdatedById = table.Column<long>(type: "INTEGER", nullable: true)
+                    LastUpdatedById = table.Column<long>(type: "bigint", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -48,17 +48,17 @@ namespace FocusFlow.Infrastructure.Persistance.Migrations
                 name: "Projects",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    Description = table.Column<string>(type: "TEXT", maxLength: 255, nullable: false),
-                    OwnerId = table.Column<long>(type: "INTEGER", nullable: false),
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    OwnerId = table.Column<long>(type: "bigint", nullable: false),
                     StartDate = table.Column<DateTime>(type: "datetime2(7)", nullable: true, defaultValueSql: "GETUTCDATE()"),
                     EndDate = table.Column<DateTime>(type: "datetime2(7)", nullable: true, defaultValueSql: "GETUTCDATE()"),
                     Created = table.Column<DateTime>(type: "datetime2(7)", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    CreatedById = table.Column<long>(type: "INTEGER", nullable: true),
+                    CreatedById = table.Column<long>(type: "bigint", nullable: true),
                     LastUpdated = table.Column<DateTime>(type: "datetime2(7)", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    LastUpdatedById = table.Column<long>(type: "INTEGER", nullable: true)
+                    LastUpdatedById = table.Column<long>(type: "bigint", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -87,18 +87,18 @@ namespace FocusFlow.Infrastructure.Persistance.Migrations
                 name: "Tasks",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Title = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    Description = table.Column<string>(type: "TEXT", maxLength: 255, nullable: false),
-                    ProjectId = table.Column<long>(type: "INTEGER", nullable: false),
-                    AssignedToId = table.Column<long>(type: "INTEGER", nullable: false),
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Title = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    ProjectId = table.Column<long>(type: "bigint", nullable: false),
+                    AssignedToId = table.Column<long>(type: "bigint", nullable: false),
                     DueDate = table.Column<DateTime>(type: "datetime2(7)", nullable: true, defaultValueSql: "GETUTCDATE()"),
                     CompletedAt = table.Column<DateTime>(type: "datetime2(7)", nullable: true, defaultValueSql: "GETUTCDATE()"),
                     Created = table.Column<DateTime>(type: "datetime2(7)", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    CreatedById = table.Column<long>(type: "INTEGER", nullable: true),
+                    CreatedById = table.Column<long>(type: "bigint", nullable: true),
                     LastUpdated = table.Column<DateTime>(type: "datetime2(7)", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    LastUpdatedById = table.Column<long>(type: "INTEGER", nullable: true)
+                    LastUpdatedById = table.Column<long>(type: "bigint", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -132,7 +132,7 @@ namespace FocusFlow.Infrastructure.Persistance.Migrations
             migrationBuilder.InsertData(
                 table: "Users",
                 columns: new[] { "Id", "Created", "CreatedById", "Email", "FullName", "LastUpdated", "LastUpdatedById", "PasswordHash", "PasswordSalt", "Username" },
-                values: new object[] { -1L, new DateTime(2026, 1, 20, 20, 33, 5, 925, DateTimeKind.Utc).AddTicks(5722), null, "System@focusflow.com", "System User", new DateTime(2026, 1, 20, 20, 33, 5, 925, DateTimeKind.Utc).AddTicks(6298), null, new byte[0], new byte[0], "System" });
+                values: new object[] { -1L, new DateTime(2026, 1, 21, 11, 12, 30, 312, DateTimeKind.Utc).AddTicks(3889), null, "System@focusflow.com", "System User", new DateTime(2026, 1, 21, 11, 12, 30, 312, DateTimeKind.Utc).AddTicks(4557), null, new byte[0], new byte[0], "System" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Projects_CreatedById",

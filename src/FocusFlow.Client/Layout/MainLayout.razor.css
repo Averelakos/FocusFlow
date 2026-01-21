@@ -48,6 +48,11 @@
     background-color: #f8f9fa;
 }
 
+/* Full width when sidebar is hidden (user not authenticated) */
+.page-wrapper.full-width {
+    margin-left: 0;
+}
+
 .page-content {
     display: flex;
     min-height: 0;

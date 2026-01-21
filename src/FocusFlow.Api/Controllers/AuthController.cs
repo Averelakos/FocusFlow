@@ -10,19 +10,19 @@ public class AuthController : BaseApiController
     }
 
     [HttpPost("Register")]
-    public async Task<IActionResult> Register([FromBody] RegisterDto request, CancellationToken ct)
+    public async Task<ActionResult<AuthResponse>> Register([FromBody] RegisterDto request, CancellationToken ct)
     {
         // Registration logic here
-        var token = await _authService.RegisterAsync(request, ct);
-        return Ok(new { token });
+        var response = await _authService.RegisterAsync(request, ct);
+        return Ok(response);
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginDto request, CancellationToken ct)
+    public async Task<ActionResult<AuthResponse>> Login([FromBody] LoginDto request, CancellationToken ct)
     {
         // Authenticate user
-        var token = await _authService.LoginAsync(request, ct);
-        return Ok(new { token });
+        var response = await _authService.LoginAsync(request, ct);
+        return Ok(response);
     }
     
 }

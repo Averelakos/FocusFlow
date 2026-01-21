@@ -3,14 +3,30 @@
 @inherits LayoutComponentBase
 
 <div class="app-layout">
-    <aside class="app-sidebar">
-        <a href="#/" class="logo logo-sm"><img src="./images/logo.svg" alt="PocketBase logo" width="40" height="40"></a>
-        <NavMenu />
-        <UserMenu />
-    </aside>
-    <div class="page-wrapper">
-        <main class="page-content">
-            @Body
-        </main>
-    </div>
+    <AuthorizeView>
+        <Authorized>
+            <aside class="app-sidebar">
+                <a href="#/" class="logo logo-sm"><img src="./images/logo.svg" alt="PocketBase logo" width="40" height="40"></a>
+                <NavMenu />
+                <UserMenu />
+            </aside>
+        </Authorized>
+    </AuthorizeView>
+    
+    <AuthorizeView>
+        <Authorized>
+            <div class="page-wrapper">
+                <main class="page-content">
+                    @Body
+                </main>
+            </div>
+        </Authorized>
+        <NotAuthorized>
+            <div class="page-wrapper full-width">
+                <main class="page-content">
+                    @Body
+                </main>
+            </div>
+        </NotAuthorized>
+    </AuthorizeView>
 </div>

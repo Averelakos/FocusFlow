@@ -1,4 +1,4 @@
-﻿@page "/register"
+@page "/login"
 @using FocusFlow.Client.Core.Models
 @using FocusFlow.Client.Core.Services
 @using Microsoft.AspNetCore.Components.Authorization
@@ -6,49 +6,34 @@
 @inject NavigationManager Navigation
 @inject AuthenticationStateProvider AuthStateProvider
 
-<PageTitle>Register - FocusFlow</PageTitle>
+<PageTitle>Login - FocusFlow</PageTitle>
 
 <div class="auth-container">
     <div class="auth-card">
-        <h3>Create Your Account</h3>
+        <h3>Login to FocusFlow</h3>
 
-        <EditForm Model="@registerModel" OnValidSubmit="HandleRegister">
+        <EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
             <DataAnnotationsValidator />
             <ValidationSummary class="validation-summary" />
-            
+
             <div class="form-group">
-                <label for="username">Username</label>
-                <InputText id="username" @bind-Value="registerModel.Username" class="form-control" placeholder="Choose a username" />
-            </div>
-            
-            <div class="form-group">
-                <label for="fullName">Full Name</label>
-                <InputText id="fullName" @bind-Value="registerModel.FullName" class="form-control" placeholder="Enter your full name" />
-            </div>
-            
-            <div class="form-group">
-                <label for="email">Email</label>
-                <InputText id="email" @bind-Value="registerModel.Email" class="form-control" placeholder="Enter your email" />
+                <label for="usernameOrEmail">Username Or Email</label>
+                <InputText id="usernameOrEmail" @bind-Value="loginModel.UsernameOrEmail" class="form-control" placeholder="Enter your username or email" />
             </div>
 
             <div class="form-group">
                 <label for="password">Password</label>
-                <InputText id="password" @bind-Value="registerModel.Password" type="password" class="form-control" placeholder="Enter your password" />
-            </div>
-
-            <div class="form-group">
-                <label for="confirmPassword">Confirm Password</label>
-                <InputText id="confirmPassword" @bind-Value="registerModel.ConfirmPassword" type="password" class="form-control" placeholder="Confirm your password" />
+                <InputText id="password" @bind-Value="loginModel.Password" type="password" class="form-control" placeholder="Enter your password" />
             </div>
 
             <button type="submit" class="btn btn-primary" disabled="@isLoading">
                 @if (isLoading)
                 {
-                    <span>Creating Account...</span>
+                    <span>Loading...</span>
                 }
                 else
                 {
-                    <span>Register</span>
+                    <span>Login</span>
                 }
             </button>
 
@@ -56,15 +41,10 @@
             {
                 <div class="alert alert-danger mt-3">@errorMessage</div>
             }
-
-            @if (registrationSuccess)
-            {
-                <div class="alert alert-success mt-3">Registration successful! Logging you in...</div>
-            }
         </EditForm>
 
         <div class="auth-footer">
-            <p>Already have an account? <a href="/login">Login here</a></p>
+            <p>Don't have an account? <a href="/register">Register here</a></p>
         </div>
     </div>
 </div>
@@ -153,12 +133,6 @@
         border: 1px solid #f5c6cb;
     }
 
-    .alert-success {
-        background-color: #d4edda;
-        color: #155724;
-        border: 1px solid #c3e6cb;
-    }
-
     .auth-footer {
         margin-top: 20px;
         text-align: center;
@@ -185,43 +159,34 @@
 </style>
 
 @code {
-    private RegisterDto registerModel = new();
+    private LoginDto loginModel = new();
     private string? errorMessage;
     private bool isLoading = false;
-    private bool registrationSuccess = false;
 
-    private async Task HandleRegister()
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? ReturnUrl { get; set; }
+
+    private async Task HandleLogin()
     {
         try
         {
             isLoading = true;
             errorMessage = null;
 
-            // Validate passwords match
-            if (registerModel.Password != registerModel.ConfirmPassword)
-            {
-                errorMessage = "Passwords do not match.";
-                isLoading = false;
-                return;
-            }
-
-            var result = await AuthService.Register(registerModel);
+            var result = await AuthService.Login(loginModel);
 
             if (result.Success && !string.IsNullOrEmpty(result.Token))
             {
-                registrationSuccess = true;
-                
                 var customAuthStateProvider = (CustomAuthStateProvider)AuthStateProvider;
                 await customAuthStateProvider.MarkUserAsAuthenticated(result.Token);
 
-                // Wait a moment to show success message
-                await Task.Delay(1000);
-                
-                Navigation.NavigateTo("/");
+                var redirectUrl = string.IsNullOrEmpty(ReturnUrl) ? "/" : Uri.UnescapeDataString(ReturnUrl);
+                Navigation.NavigateTo(redirectUrl);
             }
             else
             {
-                errorMessage = result.Message ?? "Registration failed. Please try again.";
+                errorMessage = result.Message ?? "Login failed. Please try again.";
             }
         }
         catch (Exception ex)

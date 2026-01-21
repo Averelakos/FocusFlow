@@ -1,4 +1,6 @@
 @page "/tasks"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
 @using FocusFlow.Client.Services
 @inject ApiService ApiService
 

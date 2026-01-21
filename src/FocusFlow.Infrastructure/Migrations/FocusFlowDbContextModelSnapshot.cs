@@ -2,11 +2,12 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace FocusFlow.Infrastructure.Persistance.Migrations
+namespace FocusFlow.Infrastructure.Migrations
 {
     [DbContext(typeof(FocusFlowDbContext))]
     partial class FocusFlowDbContextModelSnapshot : ModelSnapshot
@@ -14,13 +15,19 @@ namespace FocusFlow.Infrastructure.Persistance.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "9.0.0");
+            modelBuilder
+                .HasAnnotation("ProductVersion", "9.0.0")
+                .HasAnnotation("Relational:MaxIdentifierLength", 128);
+
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
             modelBuilder.Entity("Project", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
@@ -28,12 +35,12 @@ namespace FocusFlow.Infrastructure.Persistance.Migrations
                         .HasDefaultValueSql("GETUTCDATE()");
 
                     b.Property<long?>("CreatedById")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("bigint");
 
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<DateTime?>("EndDate")
                         .ValueGeneratedOnAdd()
@@ -46,15 +53,15 @@ namespace FocusFlow.Infrastructure.Persistance.Migrations
                         .HasDefaultValueSql("GETUTCDATE()");
 
                     b.Property<long?>("LastUpdatedById")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("bigint");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<long>("OwnerId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("bigint");
 
                     b.Property<DateTime?>("StartDate")
                         .ValueGeneratedOnAdd()
@@ -76,10 +83,12 @@ namespace FocusFlow.Infrastructure.Persistance.Migrations
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<long>("AssignedToId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("bigint");
 
                     b.Property<DateTime?>("CompletedAt")
                         .ValueGeneratedOnAdd()
@@ -92,12 +101,12 @@ namespace FocusFlow.Infrastructure.Persistance.Migrations
                         .HasDefaultValueSql("GETUTCDATE()");
 
                     b.Property<long?>("CreatedById")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("bigint");
 
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<DateTime?>("DueDate")
                         .ValueGeneratedOnAdd()
@@ -110,15 +119,15 @@ namespace FocusFlow.Infrastructure.Persistance.Migrations
                         .HasDefaultValueSql("GETUTCDATE()");
 
                     b.Property<long?>("LastUpdatedById")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("bigint");
 
                     b.Property<long>("ProjectId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("bigint");
 
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
 
@@ -137,7 +146,9 @@ namespace FocusFlow.Infrastructure.Persistance.Migrations
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
@@ -145,17 +156,17 @@ namespace FocusFlow.Infrastructure.Persistance.Migrations
                         .HasDefaultValueSql("GETUTCDATE()");
 
                     b.Property<long?>("CreatedById")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("bigint");
 
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<string>("FullName")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<DateTime>("LastUpdated")
                         .ValueGeneratedOnAdd()
@@ -163,20 +174,20 @@ namespace FocusFlow.Infrastructure.Persistance.Migrations
                         .HasDefaultValueSql("GETUTCDATE()");
 
                     b.Property<long?>("LastUpdatedById")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("bigint");
 
                     b.Property<byte[]>("PasswordHash")
                         .IsRequired()
-                        .HasColumnType("BLOB");
+                        .HasColumnType("varbinary(max)");
 
                     b.Property<byte[]>("PasswordSalt")
                         .IsRequired()
-                        .HasColumnType("BLOB");
+                        .HasColumnType("varbinary(max)");
 
                     b.Property<string>("Username")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
 
@@ -190,10 +201,10 @@ namespace FocusFlow.Infrastructure.Persistance.Migrations
                         new
                         {
                             Id = -1L,
-                            Created = new DateTime(2026, 1, 20, 20, 33, 5, 925, DateTimeKind.Utc).AddTicks(5722),
+                            Created = new DateTime(2026, 1, 21, 11, 12, 30, 312, DateTimeKind.Utc).AddTicks(3889),
                             Email = "System@focusflow.com",
                             FullName = "System User",
-                            LastUpdated = new DateTime(2026, 1, 20, 20, 33, 5, 925, DateTimeKind.Utc).AddTicks(6298),
+                            LastUpdated = new DateTime(2026, 1, 21, 11, 12, 30, 312, DateTimeKind.Utc).AddTicks(4557),
                             PasswordHash = new byte[0],
                             PasswordSalt = new byte[0],
                             Username = "System"

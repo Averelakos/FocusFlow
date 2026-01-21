@@ -1,4 +1,6 @@
 @page "/projects"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
 @using FocusFlow.Client.Services
 @inject ProjectClientService ProjectClientService
 

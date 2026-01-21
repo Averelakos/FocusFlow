@@ -12,19 +12,19 @@ public class AuthService : IAuthService
         _tokenProviderService = tokenProviderService;
     }
     
-    public async Task<string> RegisterAsync(RegisterDto registerDto, CancellationToken ct)
+    public async Task<AuthResponse> RegisterAsync(RegisterDto registerDto, CancellationToken ct)
     {
        if (await UserExistsAsync(registerDto.Username, registerDto.Email, ct))
        {
-            return string.Empty;
+            return new AuthResponse { Success = false, Message = "User already exists." };
        }
 
        User newUser = registerDto.ToEntity();
        var addedUser = await _userRepository.AddAsync(newUser, ct);
-       return _tokenProviderService.GenerateAccessToken(addedUser);
+       return new AuthResponse { Success = true, Token = _tokenProviderService.GenerateAccessToken(addedUser) };
     }
 
-    public async Task<string> LoginAsync(LoginDto loginDto, CancellationToken ct)
+    public async Task<AuthResponse> LoginAsync(LoginDto loginDto, CancellationToken ct)
     {
         bool isEmail = loginDto.UsernameOrEmail.IsEmail();
 
@@ -41,7 +41,7 @@ public class AuthService : IAuthService
 
         if (user is null)
         {
-            return string.Empty;
+            return new AuthResponse { Success = false, Message = "User not found." };
         }
 
         using var hmac = new HMACSHA512(user.PasswordSalt);
@@ -50,10 +50,10 @@ public class AuthService : IAuthService
 
         for (int i = 0; i < computedHash.Length; i++)
         {
-            if (computedHash[i] != user.PasswordHash[i]) return string.Empty;
+            if (computedHash[i] != user.PasswordHash[i]) return new AuthResponse { Success = false, Message = "Invalid password." };
         }
         
-        return _tokenProviderService.GenerateAccessToken(user);
+        return new AuthResponse { Success = true, Token = _tokenProviderService.GenerateAccessToken(user) };
     }
 
 

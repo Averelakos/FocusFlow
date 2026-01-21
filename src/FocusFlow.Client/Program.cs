@@ -1,16 +1,40 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Microsoft.AspNetCore.Components.Authorization;
 using FocusFlow.Client;
 using FocusFlow.Client.Services;
+using FocusFlow.Client.Core.Services;
+using Blazored.LocalStorage;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-// Configure HttpClient to use the API base address
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5094") });
+// Add Blazored LocalStorage
+builder.Services.AddBlazoredLocalStorage();
 
-// Register API service
+// Configure HttpClient with authentication handler
+builder.Services.AddScoped<AuthenticationHandler>();
+
+builder.Services.AddScoped(sp =>
+{
+    var authHandler = sp.GetRequiredService<AuthenticationHandler>();
+    authHandler.InnerHandler = new HttpClientHandler();
+    
+    var httpClient = new HttpClient(authHandler)
+    {
+        BaseAddress = new Uri("http://localhost:5094")
+    };
+    
+    return httpClient;
+});
+
+// Register authentication services
+builder.Services.AddAuthorizationCore();
+builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+
+// Register existing API services
 builder.Services.AddScoped<ApiService>();
 builder.Services.AddScoped<ProjectClientService>();
 

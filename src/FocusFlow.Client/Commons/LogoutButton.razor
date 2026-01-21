@@ -1,0 +1,40 @@
+@using FocusFlow.Client.Core.Services
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
+
+<div class="logout-component">
+    <AuthorizeView>
+        <Authorized>
+            <button @onclick="HandleLogout" class="btn-logout">
+                Logout
+            </button>
+        </Authorized>
+    </AuthorizeView>
+</div>
+
+<style>
+    .btn-logout {
+        padding: 8px 16px;
+        background-color: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background-color 0.3s;
+    }
+
+    .btn-logout:hover {
+        background-color: #c82333;
+    }
+</style>
+
+@code {
+    private async Task HandleLogout()
+    {
+        var customAuthStateProvider = (CustomAuthStateProvider)AuthStateProvider;
+        await customAuthStateProvider.MarkUserAsLoggedOut();
+        Navigation.NavigateTo("/login");
+    }
+}

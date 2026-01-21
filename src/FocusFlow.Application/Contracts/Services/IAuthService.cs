@@ -1,5 +1,5 @@
 public interface IAuthService
 {
-    Task<string> RegisterAsync(RegisterDto registerDto, CancellationToken ct);
-    Task<string> LoginAsync(LoginDto loginDto, CancellationToken ct);
+    Task<AuthResponse> RegisterAsync(RegisterDto registerDto, CancellationToken ct);
+    Task<AuthResponse> LoginAsync(LoginDto loginDto, CancellationToken ct);
 }

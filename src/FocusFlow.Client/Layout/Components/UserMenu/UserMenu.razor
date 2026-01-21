@@ -1,4 +1,8 @@
-﻿@if (isMenuOpen)
+﻿@using FocusFlow.Client.Core.Services
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
+@if (isMenuOpen)
 {
     <div class="menu-backdrop" @onclick="CloseMenu"></div>
 }
@@ -6,7 +10,7 @@
 <div tabindex="0" role="button" aria-label="Logged superuser menu" class="thumb thumb-circle link-hint" title="test@example.com" aria-expanded="@isMenuOpen" @onclick="ToggleMenu" @onclick:stopPropagation="true">
     <span class="initials">T</span> 
     <div class="toggler-container @(isMenuOpen ? "active" : "")" tabindex="-1" role="menu" @onclick:stopPropagation="true">
-        <a href="/profile" class="menu-item">
+        @* <a href="/profile" class="menu-item">
             <i class="fa-solid fa-user"></i>
             <span>Profile</span>
         </a>
@@ -14,8 +18,8 @@
             <i class="fa-solid fa-gear"></i>
             <span>Settings</span>
         </a>
-        <hr />
-        <a href="/logout" class="menu-item">
+        <hr /> *@
+        <a href="#" class="menu-item" @onclick="HandleLogout">
             <i class="fa-solid fa-right-from-bracket"></i>
             <span>Logout</span>
         </a>
@@ -34,4 +38,13 @@
     {
         isMenuOpen = false;
     }
+
+
+    private async Task HandleLogout()
+    {
+        var customAuthStateProvider = (CustomAuthStateProvider)AuthStateProvider;
+        await customAuthStateProvider.MarkUserAsLoggedOut();
+        Navigation.NavigateTo("/login");
+    }
+
 }
