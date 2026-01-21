@@ -108,4 +108,30 @@ public class ProjectTaskClientService
             return false;
         }
     }
+
+    public async Task<ProjectTaskStatisticsDto?> GetStatistics()
+    {
+        try
+        {
+            return await _httpClient.GetFromJsonAsync<ProjectTaskStatisticsDto>("api/projecttask/statistics");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching statistics: {ex.Message}");
+            return null;
+        }
+    }
+
+    public async Task<List<ProjectStatisticsDto>?> GetProjectStatistics()
+    {
+        try
+        {
+            return await _httpClient.GetFromJsonAsync<List<ProjectStatisticsDto>>("api/projecttask/statistics/byproject");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching project statistics: {ex.Message}");
+            return null;
+        }
+    }
 }

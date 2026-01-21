@@ -46,6 +46,42 @@ public class ProjectTaskService : IProjectTaskService
         .ToList();
     }
 
+    public ProjectTaskStatisticsDto GetStatistics()
+    {
+        var now = DateTime.UtcNow;
+        var allTasks = _projectTaskRepository.Queryable().ToList();
+
+        return new ProjectTaskStatisticsDto
+        {
+            TotalTasks = allTasks.Count,
+            CompletedTasks = allTasks.Count(t => t.Status == ProjectTaskStatus.Done),
+            OverdueTasks = allTasks.Count(t => t.DueDate.HasValue && t.DueDate.Value < now && t.Status != ProjectTaskStatus.Done),
+            InProgressTasks = allTasks.Count(t => t.Status == ProjectTaskStatus.InProgress),
+            TodoTasks = allTasks.Count(t => t.Status == ProjectTaskStatus.Todo)
+        };
+    }
+
+    public IEnumerable<ProjectStatisticsDto> GetProjectStatistics()
+    {
+        var now = DateTime.UtcNow;
+        var tasksByProject = _projectTaskRepository
+            .Queryable()
+            .GroupBy(t => new { t.ProjectId, t.Project.Name })
+            .Select(g => new ProjectStatisticsDto
+            {
+                ProjectId = g.Key.ProjectId,
+                ProjectName = g.Key.Name,
+                TotalTasks = g.Count(),
+                CompletedTasks = g.Count(t => t.Status == ProjectTaskStatus.Done),
+                OverdueTasks = g.Count(t => t.DueDate.HasValue && t.DueDate.Value < now && t.Status != ProjectTaskStatus.Done),
+                InProgressTasks = g.Count(t => t.Status == ProjectTaskStatus.InProgress),
+                TodoTasks = g.Count(t => t.Status == ProjectTaskStatus.Todo)
+            })
+            .ToList();
+
+        return tasksByProject;
+    }
+
     public async Task<ProjectTaskDetailDto> CreateAsync(CreateProjectTaskDto request, CancellationToken ct)
     {
         var userId = _currentUserService.GetUserId();

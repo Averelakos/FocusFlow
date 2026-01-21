@@ -20,6 +20,22 @@ public class ProjectTaskController : BaseApiController
         return Ok(projectTasks);
     }
 
+    [HttpGet("Statistics")]
+    [AuthorizeJwt]
+    public async Task<ActionResult<ProjectTaskStatisticsDto>> GetStatistics()
+    {
+        var statistics = _projectTaskService.GetStatistics();
+        return Ok(statistics);
+    }
+
+    [HttpGet("Statistics/ByProject")]
+    [AuthorizeJwt]
+    public async Task<ActionResult<List<ProjectStatisticsDto>>> GetProjectStatistics()
+    {
+        var statistics = _projectTaskService.GetProjectStatistics();
+        return Ok(statistics);
+    }
+
     [HttpGet("Project/{projectId}")]
     [AuthorizeJwt]
     public async Task<ActionResult<List<ProjectTaskSimpleDto>>> GetByProjectId(long projectId)

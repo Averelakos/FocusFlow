@@ -1,9 +1,138 @@
 ﻿@page "/"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
+@using FocusFlow.Client.Services
+@using FocusFlow.Client.Core.Models.ProjectTasks
+@inject ProjectTaskClientService ProjectTaskClientService
 
-<header class="page-header">
-    <nav class="breadcrumbs">
-        <div class="breadcrumb-item">Dashboard</div> 
-    </nav>
-</header>
+<div class="dashboard-container">
+    <header class="page-header">
+        <h1 class="page-title">Dashboard</h1>
+        <p class="page-subtitle">Overview of your projects and tasks</p>
+    </header>
+
+    @if (overallStats == null || projectStats == null)
+    {
+        <div class="loading-state">
+            <i class="fa-solid fa-spinner fa-spin"></i>
+            <span>Loading statistics...</span>
+        </div>
+    }
+    else
+    {
+        <div class="stats-section">
+            <h2 class="section-title">Overall Task Statistics</h2>
+            <div class="stats-cards">
+                <div class="stat-card total">
+                    <div class="stat-icon">
+                        <i class="fa-solid fa-list-check"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value">@overallStats.TotalTasks</div>
+                        <div class="stat-label">Total Tasks</div>
+                    </div>
+                </div>
+
+                <div class="stat-card completed">
+                    <div class="stat-icon">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value">@overallStats.CompletedTasks</div>
+                        <div class="stat-label">Completed</div>
+                    </div>
+                </div>
+
+                <div class="stat-card overdue">
+                    <div class="stat-icon">
+                        <i class="fa-solid fa-clock"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value">@overallStats.OverdueTasks</div>
+                        <div class="stat-label">Overdue</div>
+                    </div>
+                </div>
+
+                <div class="stat-card in-progress">
+                    <div class="stat-icon">
+                        <i class="fa-solid fa-spinner"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value">@overallStats.InProgressTasks</div>
+                        <div class="stat-label">In Progress</div>
+                    </div>
+                </div>
+
+                <div class="stat-card todo">
+                    <div class="stat-icon">
+                        <i class="fa-solid fa-circle"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value">@overallStats.TodoTasks</div>
+                        <div class="stat-label">To Do</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @if (projectStats.Any())
+        {
+            <div class="projects-section">
+                <h2 class="section-title">Project Statistics</h2>
+                <div class="projects-table-container">
+                    <table class="projects-table">
+                        <thead>
+                            <tr>
+                                <th>Project</th>
+                                <th>Total</th>
+                                <th>Completed</th>
+                                <th>Overdue</th>
+                                <th>In Progress</th>
+                                <th>To Do</th>
+                                <th>Progress</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var project in projectStats)
+                            {
+                                var completionRate = project.TotalTasks > 0 
+                                    ? (project.CompletedTasks * 100) / project.TotalTasks 
+                                    : 0;
+                                <tr>
+                                    <td class="project-name">@project.ProjectName</td>
+                                    <td>@project.TotalTasks</td>
+                                    <td><span class="badge completed">@project.CompletedTasks</span></td>
+                                    <td><span class="badge overdue">@project.OverdueTasks</span></td>
+                                    <td><span class="badge in-progress">@project.InProgressTasks</span></td>
+                                    <td><span class="badge todo">@project.TodoTasks</span></td>
+                                    <td>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" style="width: @completionRate%"></div>
+                                            <span class="progress-text">@completionRate%</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    private ProjectTaskStatisticsDto? overallStats;
+    private List<ProjectStatisticsDto>? projectStats;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadStatistics();
+    }
+
+    private async Task LoadStatistics()
+    {
+        overallStats = await ProjectTaskClientService.GetStatistics();
+        projectStats = await ProjectTaskClientService.GetProjectStatistics();
+    }
+}
