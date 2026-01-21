@@ -60,8 +60,13 @@ public abstract class BaseRepository<T> where T : BaseEntity
     /// </summary>
     public virtual async Task<T?> AddAsync(T entity, CancellationToken ct)
     {
-        entity.Created = DateTime.UtcNow;
-        entity.CreatedById = _currentUserService.GetUserId();
+        var now = DateTime.UtcNow;
+        var userId = _currentUserService.GetUserId();
+        
+        entity.Created = now;
+        entity.CreatedById = userId;
+        entity.LastUpdated = now;
+        entity.LastUpdatedById = userId;
 
         var result = await Set().AddAsync(entity, ct);
         if (await SaveChangesAsync(ct) < 1)
