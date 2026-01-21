@@ -3,7 +3,10 @@
 @using Microsoft.AspNetCore.Authorization
 @using FocusFlow.Client.Services
 @using FocusFlow.Client.Core.Models.ProjectTasks
+@using FocusFlow.Client.Core.Services
 @inject ProjectTaskClientService ProjectTaskClientService
+@inject TaskHubService TaskHubService
+@implements IAsyncDisposable
 
 <div class="dashboard-container">
     <header class="page-header">
@@ -128,11 +131,33 @@
     protected override async Task OnInitializedAsync()
     {
         await LoadStatistics();
+        
+        // Subscribe to SignalR events
+        TaskHubService.TaskCreated += OnTaskChangedFromHub;
+        TaskHubService.TaskUpdated += OnTaskChangedFromHub;
+        TaskHubService.TaskDeleted += OnTaskChangedFromHub;
+        
+        // Start SignalR connection
+        await TaskHubService.StartAsync();
+    }
+
+    private async Task OnTaskChangedFromHub(long taskId)
+    {
+        await LoadStatistics();
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task LoadStatistics()
     {
         overallStats = await ProjectTaskClientService.GetStatistics();
         projectStats = await ProjectTaskClientService.GetProjectStatistics();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        // Unsubscribe from SignalR events
+        TaskHubService.TaskCreated -= OnTaskChangedFromHub;
+        TaskHubService.TaskUpdated -= OnTaskChangedFromHub;
+        TaskHubService.TaskDeleted -= OnTaskChangedFromHub;
     }
 }

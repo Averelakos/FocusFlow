@@ -27,8 +27,12 @@ public static class ServiceCollectionExtension
         {
             builder.WithOrigins("http://localhost:5103", "https://localhost:7028")
                             .AllowAnyHeader()
-                            .AllowAnyMethod();
+                            .AllowAnyMethod()
+                            .AllowCredentials();
         }));
+        
+        // Add SignalR
+        services.AddSignalR();
         // services.AddCors(options =>
         // {
         //     options.AddPolicy("AllowBlazorClient", policy =>

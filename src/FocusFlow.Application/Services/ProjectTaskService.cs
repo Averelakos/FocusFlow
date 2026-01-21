@@ -1,12 +1,17 @@
+using Microsoft.AspNetCore.SignalR;
+using FocusFlow.Application.Hubs;
+
 public class ProjectTaskService : IProjectTaskService
 {
     private readonly IProjectTaskRepository _projectTaskRepository;
     private readonly ICurrentUserService _currentUserService;
+    private readonly IHubContext<TaskHub> _hubContext;
 
-    public ProjectTaskService(IProjectTaskRepository projectTaskRepository, ICurrentUserService currentUserService)
+    public ProjectTaskService(IProjectTaskRepository projectTaskRepository, ICurrentUserService currentUserService, IHubContext<TaskHub> hubContext)
     {
         _projectTaskRepository = projectTaskRepository;
         _currentUserService = currentUserService;
+        _hubContext = hubContext;
     }
 
     public async Task<ProjectTaskDetailDto> GetProjectTaskById(long id, CancellationToken ct)
@@ -103,6 +108,9 @@ public class ProjectTaskService : IProjectTaskService
         var projectTaskWithIncludes = await _projectTaskRepository.GetAsync(newEntity.Id, ct);
         if (projectTaskWithIncludes == null)
             throw new NotFoundException($"ProjectTask with id {newEntity.Id} not found after creation");
+        
+        // Notify clients about the new task
+        await _hubContext.Clients.All.SendAsync("TaskCreated", newEntity.Id, ct);
             
         return projectTaskWithIncludes.ToProjectTaskDetailDto();
     }
@@ -135,6 +143,10 @@ public class ProjectTaskService : IProjectTaskService
         entity.LastUpdatedById = userId.Value;
         
         await _projectTaskRepository.UpdateAsync(entity, ct);
+        
+        // Notify clients about the task update
+        await _hubContext.Clients.All.SendAsync("TaskUpdated", entity.Id, ct);
+        
         return entity.ToProjectTaskDetailDto();
     }
 
@@ -150,5 +162,8 @@ public class ProjectTaskService : IProjectTaskService
             throw new NotFoundException($"ProjectTask with id {id} not found");
         
         await _projectTaskRepository.DeleteAsync(id, ct);
+        
+        // Notify clients about the task deletion
+        await _hubContext.Clients.All.SendAsync("TaskDeleted", id, ct);
     }
 }

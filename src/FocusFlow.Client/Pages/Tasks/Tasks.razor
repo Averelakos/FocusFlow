@@ -5,12 +5,15 @@
 @using FocusFlow.Client.Services
 @using FocusFlow.Client.Core.Models.ProjectTasks
 @using FocusFlow.Client.Core.Models.Enums
+@using FocusFlow.Client.Core.Services
 @using FocusFlow.Client.Commons.OverlayPanel
 @using FocusFlow.Client.Pages.Tasks.Create
 @using FocusFlow.Client.Pages.Tasks.Edit
 @using FocusFlow.Client.Pages.Tasks.Detail
 @inject ProjectTaskClientService ProjectTaskClientService
 @inject ProjectClientService ProjectClientService
+@inject TaskHubService TaskHubService
+@implements IAsyncDisposable
 
 <div class="tasks-container">
     <header class="page-header">
@@ -220,6 +223,40 @@
     {
         projects = await ProjectClientService.GetLookup();
         await LoadTasks();
+        
+        // Subscribe to SignalR events
+        TaskHubService.TaskCreated += OnTaskCreatedFromHub;
+        TaskHubService.TaskUpdated += OnTaskUpdatedFromHub;
+        TaskHubService.TaskDeleted += OnTaskDeletedFromHub;
+        
+        // Start SignalR connection
+        await TaskHubService.StartAsync();
+    }
+
+    private async Task OnTaskCreatedFromHub(long taskId)
+    {
+        await LoadTasks();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task OnTaskUpdatedFromHub(long taskId)
+    {
+        await LoadTasks();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task OnTaskDeletedFromHub(long taskId)
+    {
+        await LoadTasks();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        // Unsubscribe from SignalR events
+        TaskHubService.TaskCreated -= OnTaskCreatedFromHub;
+        TaskHubService.TaskUpdated -= OnTaskUpdatedFromHub;
+        TaskHubService.TaskDeleted -= OnTaskDeletedFromHub;
     }
 
     private async Task LoadTasks()

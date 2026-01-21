@@ -37,6 +37,9 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 // Register notification service
 builder.Services.AddScoped<NotificationService>();
 
+// Register SignalR service
+builder.Services.AddSingleton<TaskHubService>();
+
 // Register existing API services
 builder.Services.AddScoped<ProjectClientService>();
 builder.Services.AddScoped<ProjectTaskClientService>();
