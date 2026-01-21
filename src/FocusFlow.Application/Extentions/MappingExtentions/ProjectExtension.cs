@@ -21,7 +21,8 @@ public static class ProjectExtensions
         return new ProjectSimpleDto
         {
             Id = entity.Id,
-            Name = entity.Name
+            Name = entity.Name,
+            Description = entity.Description
         };
     }
 

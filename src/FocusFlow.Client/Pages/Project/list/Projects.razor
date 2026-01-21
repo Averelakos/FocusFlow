@@ -9,79 +9,73 @@
 @using FocusFlow.Client.Pages.Project.Detail
 @inject ProjectClientService ProjectClientService
 
-<header class="page-header">
-    <nav class="breadcrumbs">
-        <div class="breadcrumb-item">Projects</div> 
-    </nav>
-    <div class="btns-group">
-        <button class="btn-expanded" type="button" @onclick="OpenCreatePanel">
-            <i class="fa-solid fa-plus"></i>
-            <span>New Project</span>
-        </button>
-    </div>
-</header>
+<div class="projects-container">
+    <header class="page-header">
+        <div class="header-content">
+            <div class="header-left">
+                <h1 class="page-title">Projects</h1>
+                <p class="page-subtitle">Manage and organize your project portfolio</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn-primary" type="button" @onclick="OpenCreatePanel">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>New Project</span>
+                </button>
+            </div>
+        </div>
+    </header>
 
-<div class="table-wrapper">
-    <table class="table">
-        <thead>
-            <tr>
-                <th class="col-head">
-                    <div class="col-header-content">
-                        <i class="fa-solid fa-key"></i>
-                        <span class="txt">Id</span>
-                    </div>
-                </th>
-                <th class="col-head">
-                    <div class="col-header-content">
-                        <i class="fa-solid fa-t"></i>
-                        <span class="txt">Name</span>
-                    </div>
-                </th>
-                <th class="col-head">
-                    <div class="col-header-content">
-                        <i class="fa-solid fa-cog"></i>
-                        <span class="txt">Actions</span>
-                    </div>
-                </th>
-            </tr>
-        </thead>
+    <div class="content-section">
         @if (projects is null)
         {
-            <tbody>
-                <tr>
-                    <td colspan="3" style="text-align: center; padding: 2rem;">
-                        <em>Loading...</em>
-                    </td>
-                </tr>
-            </tbody>
+            <div class="loading-state">
+                <i class="fa-solid fa-spinner fa-spin"></i>
+                <span>Loading projects...</span>
+            </div>
+        }
+        else if (!projects.Any())
+        {
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="fa-solid fa-folder-open"></i>
+                </div>
+                <h3>No projects yet</h3>
+                <p>Get started by creating your first project</p>
+                <button class="btn-primary" type="button" @onclick="OpenCreatePanel">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>Create Project</span>
+                </button>
+            </div>
         }
         else
         {
-            <tbody>
+            <div class="projects-grid">
                 @foreach (var project in projects)
                 {
-                    <tr class="row-content">
-                        <td class="col-field">
-                            <span>@project.Id</span>
-                        </td>
-                        <td class="col-field">
-                            <span>@project.Name</span>
-                        </td>
-                        <td class="col-field">
-                            <div class="action-buttons">
-                                <button class="btn-icon" @onclick="() => OpenDetailPanel(project.Id)" title="View Details">
-                                    <i class="fa-solid fa-eye"></i>
-                                </button>
+                    <div class="project-card" @onclick="() => OpenDetailPanel(project.Id)">
+                        <div class="card-header">
+                            <div class="card-title-section">
+                                <h3 class="card-title">@project.Name</h3>
+                                @if (!string.IsNullOrWhiteSpace(project.Description))
+                                {
+                                    <p class="card-description">@project.Description</p>
+                                }
+                                else
+                                {
+                                    <p class="card-description empty">No description provided</p>
+                                }
+                            </div>
+                            <div class="card-actions" @onclick:stopPropagation="true">
                                 <button class="btn-icon" @onclick="() => OpenEditPanel(project.Id)" title="Edit">
-                                    <i class="fa-solid fa-edit"></i>
+                                    <i class="fa-solid fa-pen"></i>
                                 </button>
                             </div>
-                        </td>
-                    </tr>
+                        </div>
+                    </div>
                 }
-            </tbody>
+            </div>
         }
-    </table>
+    </div>
 </div>
 
 <!-- Overlay Panels -->
