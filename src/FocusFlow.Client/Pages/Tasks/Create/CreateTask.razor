@@ -106,12 +106,12 @@
     public EventCallback OnCancel { get; set; }
 
     private CreateProjectTaskDto model = new();
-    private List<ProjectSimpleDto>? projects;
+    private List<ProjectLookupDto>? projects;
     private bool isSubmitting = false;
 
     protected override async Task OnInitializedAsync()
     {
-        projects = await ProjectClientService.GetAll();
+        projects = await ProjectClientService.GetLookup();
         
         // Set first project as default if available
         if (projects?.Any() == true)
