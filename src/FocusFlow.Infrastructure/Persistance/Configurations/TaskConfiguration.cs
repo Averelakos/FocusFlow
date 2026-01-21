@@ -32,6 +32,16 @@ public class TaskConfiguration : BaseEntityConfiguration<ProjectTask>
             .HasColumnType("datetime2(7)")
             .HasDefaultValueSql("GETUTCDATE()");
 
+        entity.Property(x => x.Status)
+            .HasConversion<string>()
+            .IsRequired()
+            .HasMaxLength(50);
+
+        entity.Property(x => x.Priority)
+            .HasConversion<string>()
+            .IsRequired()
+            .HasMaxLength(50);
+
         entity.HasOne(p => p.Project)
             .WithMany(u => u.Tasks)
             .HasForeignKey(p => p.ProjectId)

@@ -7,6 +7,8 @@ public class ProjectTask : BaseEntity
     public long AssignedToId { get; set; }
     public DateTime? DueDate { get; set; }
     public DateTime? CompletedAt { get; set; }
+    public ProjectTaskStatus Status { get; set; } = ProjectTaskStatus.Todo;
+    public ProjectTaskPriority Priority { get; set; } = ProjectTaskPriority.Low;
     #endregion Properties
    
    #region Navigation Properties

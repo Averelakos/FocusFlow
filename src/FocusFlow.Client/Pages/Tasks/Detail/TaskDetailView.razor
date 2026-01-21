@@ -1,0 +1,202 @@
+@using FocusFlow.Client.Core.Models.ProjectTasks
+@using FocusFlow.Client.Core.Models.Enums
+@using FocusFlow.Client.Core.Services
+@using FocusFlow.Client.Services
+@inject ProjectTaskClientService ProjectTaskClientService
+@inject NotificationService NotificationService
+
+@if (isLoading)
+{
+    <div class="loading-container">
+        <i class="fa-solid fa-spinner fa-spin"></i>
+        <span>Loading task details...</span>
+    </div>
+}
+else if (task != null)
+{
+    <div class="task-details">
+        <div class="detail-section">
+            <div class="detail-row">
+                <span class="detail-label">Title:</span>
+                <span class="detail-value">@task.Title</span>
+            </div>
+
+            <div class="detail-row">
+                <span class="detail-label">Description:</span>
+                <span class="detail-value">@(string.IsNullOrEmpty(task.Description) ? "N/A" : task.Description)</span>
+            </div>
+
+            <div class="detail-row">
+                <span class="detail-label">Status:</span>
+                <span class="detail-value">
+                    <span class="status-badge status-@task.Status.ToString().ToLower()">
+                        @GetStatusText(task.Status)
+                    </span>
+                </span>
+            </div>
+
+            <div class="detail-row">
+                <span class="detail-label">Priority:</span>
+                <span class="detail-value">
+                    <span class="priority-badge priority-@task.Priority.ToString().ToLower()">
+                        @task.Priority
+                    </span>
+                </span>
+            </div>
+
+            <div class="detail-row">
+                <span class="detail-label">Project:</span>
+                <span class="detail-value">@task.ProjectName</span>
+            </div>
+
+            <div class="detail-row">
+                <span class="detail-label">Assigned To:</span>
+                <span class="detail-value">@task.AssignedToName</span>
+            </div>
+
+            <div class="detail-row">
+                <span class="detail-label">Due Date:</span>
+                <span class="detail-value">@(task.DueDate?.ToString("MMM dd, yyyy") ?? "N/A")</span>
+            </div>
+
+            <div class="detail-row">
+                <span class="detail-label">Created:</span>
+                <span class="detail-value">@task.CreatedAt.ToString("MMM dd, yyyy HH:mm")</span>
+            </div>
+
+            @if (task.UpdatedAt.HasValue)
+            {
+                <div class="detail-row">
+                    <span class="detail-label">Last Updated:</span>
+                    <span class="detail-value">@task.UpdatedAt.Value.ToString("MMM dd, yyyy HH:mm")</span>
+                </div>
+            }
+
+            @if (task.CompletedAt.HasValue)
+            {
+                <div class="detail-row">
+                    <span class="detail-label">Completed:</span>
+                    <span class="detail-value">@task.CompletedAt.Value.ToString("MMM dd, yyyy HH:mm")</span>
+                </div>
+            }
+        </div>
+
+        <div class="detail-actions">
+            <button type="button" class="btn btn-primary" @onclick="OnEditClick">
+                <i class="fa-solid fa-edit"></i> Edit
+            </button>
+            <button type="button" class="btn btn-danger" @onclick="OnDeleteClick" disabled="@isDeleting">
+                @if (isDeleting)
+                {
+                    <span><i class="fa-solid fa-spinner fa-spin"></i> Deleting...</span>
+                }
+                else
+                {
+                    <span><i class="fa-solid fa-trash"></i> Delete</span>
+                }
+            </button>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public long TaskId { get; set; }
+
+    [Parameter]
+    public EventCallback OnEdit { get; set; }
+
+    [Parameter]
+    public EventCallback OnDelete { get; set; }
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    private ProjectTaskDetailDto? task;
+    private bool isLoading = true;
+    private bool isDeleting = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTask();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (task == null || task.Id != TaskId)
+        {
+            await LoadTask();
+        }
+    }
+
+    private async Task LoadTask()
+    {
+        isLoading = true;
+        try
+        {
+            task = await ProjectTaskClientService.GetById(TaskId);
+            if (task == null)
+            {
+                NotificationService.ShowError("Task not found");
+            }
+        }
+        catch (Exception ex)
+        {
+            NotificationService.ShowError($"Error loading task: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task OnEditClick()
+    {
+        await OnEdit.InvokeAsync();
+    }
+
+    private async Task OnDeleteClick()
+    {
+        if (!await ConfirmDelete()) return;
+
+        isDeleting = true;
+        try
+        {
+            var success = await ProjectTaskClientService.DeleteAsync(TaskId);
+            if (success)
+            {
+                NotificationService.ShowSuccess("Task deleted successfully!");
+                await OnDelete.InvokeAsync();
+            }
+            else
+            {
+                NotificationService.ShowError("Failed to delete task");
+            }
+        }
+        catch (Exception ex)
+        {
+            NotificationService.ShowError($"Error: {ex.Message}");
+        }
+        finally
+        {
+            isDeleting = false;
+        }
+    }
+
+    private async Task<bool> ConfirmDelete()
+    {
+        // Simple confirmation - in production, use a proper modal
+        return await Task.FromResult(true); // TODO: Implement proper confirmation dialog
+    }
+
+    private string GetStatusText(ProjectTaskStatus status)
+    {
+        return status switch
+        {
+            ProjectTaskStatus.Todo => "To Do",
+            ProjectTaskStatus.InProgress => "In Progress",
+            ProjectTaskStatus.Done => "Done",
+            _ => status.ToString()
+        };
+    }
+}

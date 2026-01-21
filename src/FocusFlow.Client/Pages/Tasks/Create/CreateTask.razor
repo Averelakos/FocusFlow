@@ -1,0 +1,153 @@
+@using FocusFlow.Client.Core.Models.ProjectTasks
+@using FocusFlow.Client.Core.Models.Projects
+@using FocusFlow.Client.Core.Models.Enums
+@using FocusFlow.Client.Core.Services
+@using FocusFlow.Client.Services
+@inject ProjectTaskClientService ProjectTaskClientService
+@inject ProjectClientService ProjectClientService
+@inject NotificationService NotificationService
+
+<div class="task-form">
+    @if (projects == null)
+    {
+        <div class="loading-state">
+            <i class="fa-solid fa-spinner fa-spin"></i>
+            <span>Loading projects...</span>
+        </div>
+    }
+    else if (!projects.Any())
+    {
+        <div class="empty-state">
+            <p>No projects available. Please create a project first.</p>
+        </div>
+    }
+    else
+    {
+        <EditForm Model="@model" OnValidSubmit="HandleSubmit">
+            <DataAnnotationsValidator />
+            
+            <div class="form-group">
+                <label for="project">Project *</label>
+                <InputSelect id="project" class="form-control" @bind-Value="model.ProjectId">
+                    <option value="0">-- Select a Project --</option>
+                    @foreach (var project in projects)
+                    {
+                        <option value="@project.Id">@project.Name</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="@(() => model.ProjectId)" />
+            </div>
+
+            <div class="form-group">
+                <label for="title">Task Title *</label>
+                <InputText id="title" class="form-control" @bind-Value="model.Title" />
+                <ValidationMessage For="@(() => model.Title)" />
+            </div>
+
+        <div class="form-group">
+            <label for="description">Description</label>
+            <InputTextArea id="description" class="form-control" @bind-Value="model.Description" rows="4" />
+            <ValidationMessage For="@(() => model.Description)" />
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="status">Status *</label>
+                <InputSelect id="status" class="form-control" @bind-Value="model.Status">
+                    <option value="@ProjectTaskStatus.Todo">To Do</option>
+                    <option value="@ProjectTaskStatus.InProgress">In Progress</option>
+                    <option value="@ProjectTaskStatus.Done">Done</option>
+                </InputSelect>
+                <ValidationMessage For="@(() => model.Status)" />
+            </div>
+
+            <div class="form-group">
+                <label for="priority">Priority *</label>
+                <InputSelect id="priority" class="form-control" @bind-Value="model.Priority">
+                    <option value="@ProjectTaskPriority.Low">Low</option>
+                    <option value="@ProjectTaskPriority.Medium">Medium</option>
+                    <option value="@ProjectTaskPriority.High">High</option>
+                    <option value="@ProjectTaskPriority.Critical">Critical</option>
+                </InputSelect>
+                <ValidationMessage For="@(() => model.Priority)" />
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="dueDate">Due Date</label>
+            <InputDate id="dueDate" class="form-control" @bind-Value="model.DueDate" />
+            <ValidationMessage For="@(() => model.DueDate)" />
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary" disabled="@isSubmitting">
+                @if (isSubmitting)
+                {
+                    <span><i class="fa-solid fa-spinner fa-spin"></i> Creating...</span>
+                }
+                else
+                {
+                    <span><i class="fa-solid fa-plus"></i> Create Task</span>
+                }
+            </button>
+            <button type="button" class="btn btn-secondary" @onclick="Cancel">
+                Cancel
+            </button>
+        </div>
+        </EditForm>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public EventCallback<ProjectTaskDetailDto> OnTaskCreated { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    private CreateProjectTaskDto model = new();
+    private List<ProjectSimpleDto>? projects;
+    private bool isSubmitting = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        projects = await ProjectClientService.GetAll();
+        
+        // Set first project as default if available
+        if (projects?.Any() == true)
+        {
+            model.ProjectId = projects.First().Id;
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        isSubmitting = true;
+        try
+        {
+            var result = await ProjectTaskClientService.CreateAsync(model);
+            if (result != null)
+            {
+                NotificationService.ShowSuccess("Task created successfully!");
+                await OnTaskCreated.InvokeAsync(result);
+            }
+            else
+            {
+                NotificationService.ShowError("Failed to create task");
+            }
+        }
+        catch (Exception ex)
+        {
+            NotificationService.ShowError($"Error: {ex.Message}");
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private async Task Cancel()
+    {
+        await OnCancel.InvokeAsync();
+    }
+}

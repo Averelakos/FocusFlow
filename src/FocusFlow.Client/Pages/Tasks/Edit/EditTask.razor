@@ -1,0 +1,166 @@
+@using FocusFlow.Client.Core.Models.ProjectTasks
+@using FocusFlow.Client.Core.Models.Enums
+@using FocusFlow.Client.Core.Services
+@using FocusFlow.Client.Services
+@inject ProjectTaskClientService ProjectTaskClientService
+@inject NotificationService NotificationService
+
+@if (isLoading)
+{
+    <div class="loading-container">
+        <i class="fa-solid fa-spinner fa-spin"></i>
+        <span>Loading task...</span>
+    </div>
+}
+else if (model != null)
+{
+    <div class="task-form">
+        <EditForm Model="@model" OnValidSubmit="HandleSubmit">
+            <DataAnnotationsValidator />
+            
+            <div class="form-group">
+                <label for="title">Task Title *</label>
+                <InputText id="title" class="form-control" @bind-Value="model.Title" />
+                <ValidationMessage For="@(() => model.Title)" />
+            </div>
+
+            <div class="form-group">
+                <label for="description">Description</label>
+                <InputTextArea id="description" class="form-control" @bind-Value="model.Description" rows="4" />
+                <ValidationMessage For="@(() => model.Description)" />
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="status">Status *</label>
+                    <InputSelect id="status" class="form-control" @bind-Value="model.Status">
+                        <option value="@ProjectTaskStatus.Todo">To Do</option>
+                        <option value="@ProjectTaskStatus.InProgress">In Progress</option>
+                        <option value="@ProjectTaskStatus.Done">Done</option>
+                    </InputSelect>
+                    <ValidationMessage For="@(() => model.Status)" />
+                </div>
+
+                <div class="form-group">
+                    <label for="priority">Priority *</label>
+                    <InputSelect id="priority" class="form-control" @bind-Value="model.Priority">
+                        <option value="@ProjectTaskPriority.Low">Low</option>
+                        <option value="@ProjectTaskPriority.Medium">Medium</option>
+                        <option value="@ProjectTaskPriority.High">High</option>
+                        <option value="@ProjectTaskPriority.Critical">Critical</option>
+                    </InputSelect>
+                    <ValidationMessage For="@(() => model.Priority)" />
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="dueDate">Due Date</label>
+                <InputDate id="dueDate" class="form-control" @bind-Value="model.DueDate" />
+                <ValidationMessage For="@(() => model.DueDate)" />
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary" disabled="@isSubmitting">
+                    @if (isSubmitting)
+                    {
+                        <span><i class="fa-solid fa-spinner fa-spin"></i> Updating...</span>
+                    }
+                    else
+                    {
+                        <span><i class="fa-solid fa-save"></i> Update Task</span>
+                    }
+                </button>
+                <button type="button" class="btn btn-secondary" @onclick="Cancel">
+                    Cancel
+                </button>
+            </div>
+        </EditForm>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public long TaskId { get; set; }
+
+    [Parameter]
+    public EventCallback<ProjectTaskDetailDto> OnTaskUpdated { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    private UpdateProjectTaskDto? model;
+    private bool isLoading = true;
+    private bool isSubmitting = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTask();
+    }
+
+    private async Task LoadTask()
+    {
+        isLoading = true;
+        try
+        {
+            var task = await ProjectTaskClientService.GetById(TaskId);
+            if (task != null)
+            {
+                model = new UpdateProjectTaskDto
+                {
+                    Id = task.Id,
+                    Title = task.Title,
+                    Description = task.Description,
+                    DueDate = task.DueDate,
+                    Status = task.Status,
+                    Priority = task.Priority,
+                    AssignedToId = task.AssignedToId
+                };
+            }
+            else
+            {
+                NotificationService.ShowError("Task not found");
+            }
+        }
+        catch (Exception ex)
+        {
+            NotificationService.ShowError($"Error loading task: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        if (model == null) return;
+
+        isSubmitting = true;
+        try
+        {
+            var result = await ProjectTaskClientService.UpdateAsync(model);
+            if (result != null)
+            {
+                NotificationService.ShowSuccess("Task updated successfully!");
+                await OnTaskUpdated.InvokeAsync(result);
+            }
+            else
+            {
+                NotificationService.ShowError("Failed to update task");
+            }
+        }
+        catch (Exception ex)
+        {
+            NotificationService.ShowError($"Error: {ex.Message}");
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private async Task Cancel()
+    {
+        await OnCancel.InvokeAsync();
+    }
+}

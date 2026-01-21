@@ -2,27 +2,59 @@ using Microsoft.AspNetCore.Mvc;
 
 public class ProjectTaskController : BaseApiController
 {
-    private readonly IAuthService _authService;
+    private readonly IProjectTaskService _projectTaskService;
 
-    public ProjectTaskController(ILogger<ProjectTaskController> logger, IAuthService authService) : base(logger) 
+    public ProjectTaskController(ILogger<ProjectTaskController> logger, IProjectTaskService projectTaskService) : base(logger) 
     {
-        _authService = authService;
+        _projectTaskService = projectTaskService;
     }
 
-    [HttpPost("Register")]
-    public async Task<IActionResult> Register([FromBody] RegisterDto request, CancellationToken ct)
+    [HttpGet("Getall")]
+    [AuthorizeJwt]
+    public async Task<ActionResult<List<ProjectTaskSimpleDto>>> GetAll()
     {
-        // Registration logic here
-        var token = await _authService.RegisterAsync(request, ct);
-        return Ok(new { token });
+        var projectTasks = _projectTaskService.GetAll();
+        return Ok(projectTasks);
     }
 
-    [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginDto request, CancellationToken ct)
+    [HttpGet("Project/{projectId}")]
+    [AuthorizeJwt]
+    public async Task<ActionResult<List<ProjectTaskSimpleDto>>> GetByProjectId(long projectId)
     {
-        // Authenticate user
-        var token = await _authService.LoginAsync(request, ct);
-        return Ok(new { token });
+        var projectTasks = _projectTaskService.GetByProjectId(projectId);
+        return Ok(projectTasks);
+    }
+
+    [HttpGet("{id}")]
+    [AuthorizeJwt]
+    public async Task<ActionResult<ProjectTaskDetailDto>> GetById(long id, CancellationToken ct)
+    {
+        var projectTask = await _projectTaskService.GetProjectTaskById(id, ct);
+        return Ok(projectTask);
+    }
+
+    [HttpPost("Create")]
+    [AuthorizeJwt]
+    public async Task<ActionResult<ProjectTaskDetailDto>> Create([FromBody] CreateProjectTaskDto request, CancellationToken ct)
+    {
+        var projectTask = await _projectTaskService.CreateAsync(request, ct);
+        return CreatedAtAction(nameof(Create), new { id = projectTask.Id }, projectTask);
+    }
+
+    [HttpPut("Update")]
+    [AuthorizeJwt]
+    public async Task<ActionResult<ProjectTaskDetailDto>> Update([FromBody] UpdateProjectTaskDto request, CancellationToken ct)
+    {
+        var projectTask = await _projectTaskService.UpdateAsync(request, ct);
+        return Ok(projectTask);
+    }
+
+    [HttpDelete("Delete/{id}")]
+    [AuthorizeJwt]
+    public async Task<ActionResult> Delete(long id, CancellationToken ct)
+    {
+        await _projectTaskService.DeleteAsync(id, ct);
+        return NoContent();
     }
     
 }

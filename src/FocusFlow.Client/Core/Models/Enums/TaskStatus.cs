@@ -1,3 +1,5 @@
+namespace FocusFlow.Client.Core.Models.Enums;
+
 public enum ProjectTaskStatus
 {
     Todo = 0,

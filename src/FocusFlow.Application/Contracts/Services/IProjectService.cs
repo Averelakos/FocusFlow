@@ -9,4 +9,10 @@ public interface IProjectService
 
 public interface IProjectTaskService
 {
+    Task<ProjectTaskDetailDto> GetProjectTaskById(long id, CancellationToken ct);
+    IEnumerable<ProjectTaskSimpleDto> GetAll();
+    IEnumerable<ProjectTaskSimpleDto> GetByProjectId(long projectId);
+    Task<ProjectTaskDetailDto> CreateAsync(CreateProjectTaskDto request, CancellationToken ct);
+    Task<ProjectTaskDetailDto> UpdateAsync(UpdateProjectTaskDto request, CancellationToken ct);
+    Task DeleteAsync(long id, CancellationToken ct);
 }

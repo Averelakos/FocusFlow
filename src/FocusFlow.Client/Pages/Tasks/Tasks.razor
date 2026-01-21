@@ -2,38 +2,282 @@
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
 @using FocusFlow.Client.Services
+@using FocusFlow.Client.Core.Models.ProjectTasks
+@using FocusFlow.Client.Core.Models.Enums
+@using FocusFlow.Client.Commons.OverlayPanel
+@using FocusFlow.Client.Pages.Tasks.Create
+@using FocusFlow.Client.Pages.Tasks.Edit
+@using FocusFlow.Client.Pages.Tasks.Detail
+@inject ProjectTaskClientService ProjectTaskClientService
+@inject ProjectClientService ProjectClientService
 
-<header class="page-header">
-    <nav class="breadcrumbs">
-        <div class="breadcrumb-item">Tasks</div> 
-    </nav>
-</header>
+<div class="tasks-container">
+    <header class="page-header">
+        <div class="header-content">
+            <div class="header-left">
+                <h1 class="page-title">Tasks</h1>
+                <p class="page-subtitle">Manage and track your project tasks</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn-primary" type="button" @onclick="OpenCreatePanel">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>New Task</span>
+                </button>
+            </div>
+        </div>
+    </header>
 
-@* @if (isLoading)
-{ *@
-    <p>Loading...</p>
-@* }
-else if (projects == null || !projects.Any())
-{
-    <p>No projects found.</p>
-}
-else
-{
-    <ul>
-        @foreach (var project in projects)
+    <div class="content-section">
+        @if (tasks is null)
         {
-            <li>@project.Name - @project.Description</li>
+            <div class="loading-state">
+                <i class="fa-solid fa-spinner fa-spin"></i>
+                <span>Loading tasks...</span>
+            </div>
         }
-    </ul>
-}
+        else if (!tasks.Any())
+        {
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="fa-solid fa-list-check"></i>
+                </div>
+                <h3>No tasks yet</h3>
+                <p>Get started by creating your first task</p>
+                <button class="btn-primary" type="button" @onclick="OpenCreatePanel">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>Create Task</span>
+                </button>
+            </div>
+        }
+        else
+        {
+            <div class="table-container">
+                <table class="tasks-table">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Description</th>
+                            <th>Due Date</th>
+                            <th>Status</th>
+                            <th>Priority</th>
+                            <th>Assigned User</th>
+                            <th class="actions-col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var task in tasks)
+                        {
+                            <tr @onclick="() => OpenDetailPanel(task.Id)" class="table-row">
+                                <td class="task-title">@task.Title</td>
+                                <td class="task-description">
+                                    @if (!string.IsNullOrWhiteSpace(task.Description))
+                                    {
+                                        <span>@(task.Description.Length > 50 ? task.Description.Substring(0, 50) + "..." : task.Description)</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">No description</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (task.DueDate.HasValue)
+                                    {
+                                        <span class="@GetDueDateClass(task.DueDate.Value)">
+                                            @task.DueDate.Value.ToString("MMM dd, yyyy")
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">N/A</span>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="status-badge status-@task.Status.ToString().ToLower()">
+                                        @GetStatusText(task.Status)
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="priority-badge priority-@task.Priority.ToString().ToLower()">
+                                        @task.Priority
+                                    </span>
+                                </td>
+                                <td>
+                                    @if (detailedTasks.TryGetValue(task.Id, out var detailedTask))
+                                    {
+                                        <span>@detailedTask.AssignedToName</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Loading...</span>
+                                    }
+                                </td>
+                                <td class="actions-col" @onclick:stopPropagation="true">
+                                    <button class="btn-icon" @onclick="() => OpenEditPanel(task.Id)" title="Edit">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </button>
+                                    <button class="btn-icon btn-icon-danger" @onclick="() => DeleteTask(task.Id)" title="Delete">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+@* Create Task Overlay *@
+<OverlayPanel IsVisible="showCreatePanel" OnClose="CloseCreatePanel" Title="Create New Task">
+    <CreateTask 
+        OnTaskCreated="HandleTaskCreated" 
+        OnCancel="CloseCreatePanel" />
+</OverlayPanel>
+
+@* Edit Task Overlay *@
+<OverlayPanel IsVisible="showEditPanel" OnClose="CloseEditPanel" Title="Edit Task">
+    @if (selectedTaskId.HasValue)
+    {
+        <EditTask 
+            TaskId="selectedTaskId.Value" 
+            OnTaskUpdated="HandleTaskUpdated" 
+            OnCancel="CloseEditPanel" />
+    }
+</OverlayPanel>
+
+@* Task Detail Overlay *@
+<OverlayPanel IsVisible="showDetailPanel" OnClose="CloseDetailPanel" Title="Task Details">
+    @if (selectedTaskId.HasValue)
+    {
+        <TaskDetailView 
+            TaskId="selectedTaskId.Value" 
+            OnEdit="SwitchToEdit"
+            OnDelete="HandleTaskDeleted" 
+            OnClose="CloseDetailPanel" />
+    }
+</OverlayPanel>
 
 @code {
-    private List<ProjectDto>? projects;
-    private bool isLoading = true;
+    private List<ProjectTaskSimpleDto>? tasks;
+    private Dictionary<long, ProjectTaskDetailDto> detailedTasks = new();
+    private bool showCreatePanel = false;
+    private bool showEditPanel = false;
+    private bool showDetailPanel = false;
+    private long? selectedTaskId;
 
     protected override async Task OnInitializedAsync()
     {
-        var token  = await ApiService.TestApiAsync();
-        isLoading = false; *@
+        await LoadTasks();
+    }
+
+    private async Task LoadTasks()
+    {
+        tasks = await ProjectTaskClientService.GetAll();
+        
+        // Load detailed info for assigned users
+        if (tasks != null)
+        {
+            foreach (var task in tasks)
+            {
+                var detailedTask = await ProjectTaskClientService.GetById(task.Id);
+                if (detailedTask != null)
+                {
+                    detailedTasks[task.Id] = detailedTask;
+                }
+            }
+            StateHasChanged();
+        }
+    }
+
+    private void OpenCreatePanel()
+    {
+        showCreatePanel = true;
+    }
+
+    private void CloseCreatePanel()
+    {
+        showCreatePanel = false;
+    }
+
+    private async Task HandleTaskCreated(ProjectTaskDetailDto task)
+    {
+        CloseCreatePanel();
+        await LoadTasks();
+    }
+
+    private void OpenEditPanel(long taskId)
+    {
+        selectedTaskId = taskId;
+        showEditPanel = true;
+    }
+
+    private void CloseEditPanel()
+    {
+        showEditPanel = false;
+        selectedTaskId = null;
+    }
+
+    private async Task HandleTaskUpdated(ProjectTaskDetailDto task)
+    {
+        CloseEditPanel();
+        await LoadTasks();
+    }
+
+    private void OpenDetailPanel(long taskId)
+    {
+        selectedTaskId = taskId;
+        showDetailPanel = true;
+    }
+
+    private void CloseDetailPanel()
+    {
+        showDetailPanel = false;
+        selectedTaskId = null;
+    }
+
+    private void SwitchToEdit()
+    {
+        showDetailPanel = false;
+        showEditPanel = true;
+    }
+
+    private async Task HandleTaskDeleted()
+    {
+        CloseDetailPanel();
+        await LoadTasks();
+    }
+
+    private async Task DeleteTask(long taskId)
+    {
+        // Simple confirmation - in production, use a proper modal
+        var success = await ProjectTaskClientService.DeleteAsync(taskId);
+        if (success)
+        {
+            await LoadTasks();
+        }
+    }
+
+    private string GetStatusText(ProjectTaskStatus status)
+    {
+        return status switch
+        {
+            ProjectTaskStatus.Todo => "To Do",
+            ProjectTaskStatus.InProgress => "In Progress",
+            ProjectTaskStatus.Done => "Done",
+            _ => status.ToString()
+        };
+    }
+
+    private string GetDueDateClass(DateTime dueDate)
+    {
+        var daysUntilDue = (dueDate.Date - DateTime.UtcNow.Date).Days;
+        
+        if (daysUntilDue < 0)
+            return "due-overdue";
+        else if (daysUntilDue <= 3)
+            return "due-soon";
+        else
+            return "due-normal";
     }
 }

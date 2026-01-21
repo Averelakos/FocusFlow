@@ -39,5 +39,6 @@ builder.Services.AddScoped<NotificationService>();
 
 // Register existing API services
 builder.Services.AddScoped<ProjectClientService>();
+builder.Services.AddScoped<ProjectTaskClientService>();
 
 await builder.Build().RunAsync();

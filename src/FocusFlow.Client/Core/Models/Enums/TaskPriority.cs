@@ -1,3 +1,5 @@
+namespace FocusFlow.Client.Core.Models.Enums;
+
 public enum ProjectTaskPriority
 {
     Low = 0,
