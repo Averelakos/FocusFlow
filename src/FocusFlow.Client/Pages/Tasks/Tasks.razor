@@ -206,7 +206,7 @@
 
 @code {
     private List<ProjectTaskSimpleDto>? tasks;
-    private List<ProjectSimpleDto>? projects;
+    private List<ProjectLookupDto>? projects;
     private Dictionary<long, ProjectTaskDetailDto> detailedTasks = new();
     private bool showCreatePanel = false;
     private bool showEditPanel = false;
@@ -218,7 +218,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        projects = await ProjectClientService.GetAll();
+        projects = await ProjectClientService.GetLookup();
         await LoadTasks();
     }
 

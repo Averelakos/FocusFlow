@@ -25,6 +25,19 @@ public class ProjectClientService
         }
     }
 
+    public async Task<List<ProjectLookupDto>?> GetLookup()
+    {
+        try
+        {
+            return await _httpClient.GetFromJsonAsync<List<ProjectLookupDto>>("api/project/lookup");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching project lookup: {ex.Message}");
+            return null;
+        }
+    }
+
     public async Task<ProjectDetailDto?> GetById(long id)
     {
         try

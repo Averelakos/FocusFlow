@@ -1,12 +1,17 @@
+using Microsoft.Extensions.Caching.Memory;
+
 public class ProjectService : IProjectService
 {
     private readonly IProjectRepository _projectRepository;
     private readonly ICurrentUserService _currentUserService;
+    private readonly IMemoryCache _cache;
+    private const string ProjectLookupCacheKey = "ProjectLookupCache";
 
-    public ProjectService(IProjectRepository projectRepository, ICurrentUserService currentUserService)
+    public ProjectService(IProjectRepository projectRepository, ICurrentUserService currentUserService, IMemoryCache cache)
     {
         _projectRepository = projectRepository;
         _currentUserService = currentUserService;
+        _cache = cache;
     }
 
     public async Task<ProjectDetailDto> GetProjectById(long id, CancellationToken ct)
@@ -27,6 +32,29 @@ public class ProjectService : IProjectService
         .ToList();
     }
 
+    public IEnumerable<ProjectLookupDto> GetLookup()
+    {
+        // Try to get from cache
+        if (_cache.TryGetValue(ProjectLookupCacheKey, out List<ProjectLookupDto>? cachedLookup))
+        {
+            return cachedLookup!;
+        }
+
+        // Fetch from database
+        var lookup = _projectRepository
+            .Queryable()
+            .Select(p => p.ToProjectLookupDto())
+            .ToList();
+
+        // Store in cache
+        var cacheOptions = new MemoryCacheEntryOptions()
+            .SetAbsoluteExpiration(TimeSpan.FromHours(24));
+        
+        _cache.Set(ProjectLookupCacheKey, lookup, cacheOptions);
+
+        return lookup;
+    }
+
     public async Task<ProjectDetailDto> CreateAsync(CreateProjectDto request, CancellationToken ct)
     {
         var userId = _currentUserService.GetUserId();
@@ -42,6 +70,9 @@ public class ProjectService : IProjectService
         var projectWithIncludes = await _projectRepository.GetAsync(newEntity.Id, ct);
         if (projectWithIncludes == null)
             throw new NotFoundException($"Project with id {newEntity.Id} not found after creation");
+        
+        // Invalidate cache since a new project was created
+        _cache.Remove(ProjectLookupCacheKey);
             
         return projectWithIncludes.ToProjectDetailDto();
     }
@@ -67,6 +98,10 @@ public class ProjectService : IProjectService
         entity.LastUpdatedById = userId.Value;
         
         await _projectRepository.UpdateAsync(entity, ct);
+        
+        // Invalidate cache since project name might have changed
+        _cache.Remove(ProjectLookupCacheKey);
+        
         return entity.ToProjectDetailDto();
     }
 
@@ -86,5 +121,8 @@ public class ProjectService : IProjectService
             throw new ForbiddenException("You do not have permission to delete this project");
         
         await _projectRepository.DeleteAsync(id, ct);
+        
+        // Invalidate cache since a project was deleted
+        _cache.Remove(ProjectLookupCacheKey);
     }
 }

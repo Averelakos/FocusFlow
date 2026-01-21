@@ -18,6 +18,14 @@ public class ProjectController : BaseApiController
         return Ok(projects);
     }
 
+    [HttpGet("Lookup")]
+    [AuthorizeJwt]
+    public async Task<ActionResult<List<ProjectLookupDto>>> GetLookup()
+    {
+        var projects = _projectService.GetLookup();
+        return Ok(projects);
+    }
+
     [HttpGet("{id}")]
     [AuthorizeJwt]
     public async Task<ActionResult<ProjectDetailDto>> GetById(long id, CancellationToken ct)

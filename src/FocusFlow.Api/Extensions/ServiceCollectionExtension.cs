@@ -9,6 +9,9 @@ public static class ServiceCollectionExtension
         // Register your services here
         services.AddControllers();
         
+        // Add Memory Cache
+        services.AddMemoryCache();
+        
         // Add FluentValidation
         services.AddFluentValidationAutoValidation();
         services.AddFluentValidationClientsideAdapters();

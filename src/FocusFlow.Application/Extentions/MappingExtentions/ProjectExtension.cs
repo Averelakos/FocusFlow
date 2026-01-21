@@ -26,6 +26,15 @@ public static class ProjectExtensions
         };
     }
 
+    public static ProjectLookupDto ToProjectLookupDto(this Project entity)
+    {
+        return new ProjectLookupDto
+        {
+            Id = entity.Id,
+            Name = entity.Name
+        };
+    }
+
     public static Project ToEntity(this CreateProjectDto dto)
     {
         return new Project
