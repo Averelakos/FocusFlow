@@ -1,4 +1,6 @@
 using FocusFlow.Application;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 
 public static class ServiceCollectionExtension
 {
@@ -6,6 +8,11 @@ public static class ServiceCollectionExtension
     {
         // Register your services here
         services.AddControllers();
+        
+        // Add FluentValidation
+        services.AddFluentValidationAutoValidation();
+        services.AddFluentValidationClientsideAdapters();
+        
         services.AddProjects(configuration);
         services.AddOpenApi(options =>
         {

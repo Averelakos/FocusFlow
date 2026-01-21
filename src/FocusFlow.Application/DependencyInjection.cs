@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using FluentValidation;
+using FocusFlow.Application.Validators;
 
 namespace FocusFlow.Application;
 
@@ -8,6 +10,7 @@ public static class DependencyInjection
     {
         // Add application services here
         services.AddService();
+        services.AddValidators();
         return services;
     }
 
@@ -15,6 +18,12 @@ public static class DependencyInjection
     {
         services.AddTransient<IAuthService, AuthService>();
         services.AddTransient<IProjectService, ProjectService>();
+        return services;
+    }
+
+    public static IServiceCollection AddValidators(this IServiceCollection services)
+    {
+        services.AddValidatorsFromAssemblyContaining<LoginDtoValidator>();
         return services;
     }
 }
