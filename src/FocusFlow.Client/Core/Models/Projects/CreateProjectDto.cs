@@ -2,9 +2,8 @@ namespace FocusFlow.Client.Core.Models.Projects;
 
 public record CreateProjectDto
 {
-    public string Name { get; init; } = string.Empty;
-    public string? Description { get; init; }
-
-    public DateTime? StartDate { get; init; }
-    public DateTime? EndDate { get; init; }
+    public string Name { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public DateTime? StartDate { get; set; }
+    public DateTime? EndDate { get; set; }
 }

@@ -3,8 +3,8 @@ using Microsoft.Extensions.Logging;
 
 public class ProjectRepository : BaseRepository<Project>, IProjectRepository
 {
-    public ProjectRepository(FocusFlowDbContext context, ILogger<ProjectRepository> logger)
-        : base(logger, context)
+    public ProjectRepository(FocusFlowDbContext context, ILogger<ProjectRepository> logger, ICurrentUserService currentUserService)
+        : base(logger, context, currentUserService)
     {
     }
 
@@ -12,6 +12,8 @@ public class ProjectRepository : BaseRepository<Project>, IProjectRepository
     {
         return base.SetWithIncludes()
         .Include(x => x.Owner)
+        .Include(x => x.CreatedBy)
+        .Include(x => x.LastUpdatedBy)
         .Include(x => x.Tasks);
     }
 }

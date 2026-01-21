@@ -1,0 +1,47 @@
+@if (IsVisible)
+{
+    <div class="overlay-panel-backdrop" @onclick="OnBackdropClick">
+        <div class="overlay-panel-container" @onclick:stopPropagation="true">
+            <div class="overlay-panel-header">
+                <h2 class="overlay-panel-title">@Title</h2>
+                <button class="overlay-panel-close" @onclick="Close" type="button">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="overlay-panel-content">
+                @ChildContent
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public bool IsVisible { get; set; }
+
+    [Parameter]
+    public string Title { get; set; } = string.Empty;
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    [Parameter]
+    public bool CloseOnBackdropClick { get; set; } = true;
+
+    private async Task Close()
+    {
+        IsVisible = false;
+        await OnClose.InvokeAsync();
+    }
+
+    private async Task OnBackdropClick()
+    {
+        if (CloseOnBackdropClick)
+        {
+            await Close();
+        }
+    }
+}

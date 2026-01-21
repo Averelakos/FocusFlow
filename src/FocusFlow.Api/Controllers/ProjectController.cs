@@ -18,6 +18,14 @@ public class ProjectController : BaseApiController
         return Ok(projects);
     }
 
+    [HttpGet("{id}")]
+    [AuthorizeJwt]
+    public async Task<ActionResult<ProjectDetailDto>> GetById(long id, CancellationToken ct)
+    {
+        var project = await _projectService.GetProjectById(id, ct);
+        return Ok(project);
+    }
+
     [HttpPost("Create")]
     [AuthorizeJwt]
     public async Task<ActionResult<ProjectDetailDto>> Create([FromBody] CreateProjectDto request, CancellationToken ct)

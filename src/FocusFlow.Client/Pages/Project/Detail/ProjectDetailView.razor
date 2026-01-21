@@ -1,0 +1,165 @@
+@using FocusFlow.Client.Core.Models.Projects
+@using FocusFlow.Client.Core.Services
+@using FocusFlow.Client.Services
+@inject ProjectClientService ProjectClientService
+@inject NotificationService NotificationService
+
+@if (isLoading)
+{
+    <div class="loading-container">
+        <i class="fa-solid fa-spinner fa-spin"></i>
+        <span>Loading project details...</span>
+    </div>
+}
+else if (project != null)
+{
+    <div class="project-details">
+        <div class="detail-section">
+            <div class="detail-row">
+                <span class="detail-label">Name:</span>
+                <span class="detail-value">@project.Name</span>
+            </div>
+
+            <div class="detail-row">
+                <span class="detail-label">Description:</span>
+                <span class="detail-value">@(string.IsNullOrEmpty(project.Description) ? "N/A" : project.Description)</span>
+            </div>
+
+            <div class="detail-row">
+                <span class="detail-label">Owner:</span>
+                <span class="detail-value">@project.OwnerName</span>
+            </div>
+
+            <div class="detail-row">
+                <span class="detail-label">Start Date:</span>
+                <span class="detail-value">@(project.StartDate?.ToString("MMM dd, yyyy") ?? "N/A")</span>
+            </div>
+
+            <div class="detail-row">
+                <span class="detail-label">End Date:</span>
+                <span class="detail-value">@(project.EndDate?.ToString("MMM dd, yyyy") ?? "N/A")</span>
+            </div>
+
+            <div class="detail-row">
+                <span class="detail-label">Created:</span>
+                <span class="detail-value">@project.CreatedAt.ToString("MMM dd, yyyy HH:mm")</span>
+            </div>
+
+            @if (project.UpdatedAt.HasValue)
+            {
+                <div class="detail-row">
+                    <span class="detail-label">Last Updated:</span>
+                    <span class="detail-value">@project.UpdatedAt.Value.ToString("MMM dd, yyyy HH:mm")</span>
+                </div>
+            }
+        </div>
+
+        <div class="detail-actions">
+            <button type="button" class="btn btn-primary" @onclick="OnEditClick">
+                <i class="fa-solid fa-edit"></i> Edit
+            </button>
+            <button type="button" class="btn btn-danger" @onclick="OnDeleteClick" disabled="@isDeleting">
+                @if (isDeleting)
+                {
+                    <span><i class="fa-solid fa-spinner fa-spin"></i> Deleting...</span>
+                }
+                else
+                {
+                    <span><i class="fa-solid fa-trash"></i> Delete</span>
+                }
+            </button>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public long ProjectId { get; set; }
+
+    [Parameter]
+    public EventCallback OnEdit { get; set; }
+
+    [Parameter]
+    public EventCallback OnDelete { get; set; }
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    private ProjectDetailDto? project;
+    private bool isLoading = true;
+    private bool isDeleting = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProject();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (project == null || project.Id != ProjectId)
+        {
+            await LoadProject();
+        }
+    }
+
+    private async Task LoadProject()
+    {
+        isLoading = true;
+        try
+        {
+            project = await ProjectClientService.GetById(ProjectId);
+            if (project == null)
+            {
+                NotificationService.ShowError("Project not found");
+            }
+        }
+        catch (Exception ex)
+        {
+            NotificationService.ShowError($"Error loading project: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task OnEditClick()
+    {
+        await OnEdit.InvokeAsync();
+    }
+
+    private async Task OnDeleteClick()
+    {
+        if (!await ConfirmDelete()) return;
+
+        isDeleting = true;
+        try
+        {
+            var success = await ProjectClientService.DeleteAsync(ProjectId);
+            if (success)
+            {
+                NotificationService.ShowSuccess("Project deleted successfully!");
+                await OnDelete.InvokeAsync();
+            }
+            else
+            {
+                NotificationService.ShowError("Failed to delete project");
+            }
+        }
+        catch (Exception ex)
+        {
+            NotificationService.ShowError($"Error: {ex.Message}");
+        }
+        finally
+        {
+            isDeleting = false;
+        }
+    }
+
+    private async Task<bool> ConfirmDelete()
+    {
+        // Simple confirmation - you can replace with a proper modal
+        return await Task.FromResult(true);
+        // TODO: Implement proper confirmation dialog
+    }
+}

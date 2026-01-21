@@ -37,7 +37,13 @@ public class ProjectService : IProjectService
         project.OwnerId = userId.Value;
         
         var newEntity = await _projectRepository.AddAsync(project, ct);
-        return newEntity.ToProjectDetailDto();
+        
+        // Reload the entity with navigation properties
+        var projectWithIncludes = await _projectRepository.GetAsync(newEntity.Id, ct);
+        if (projectWithIncludes == null)
+            throw new NotFoundException($"Project with id {newEntity.Id} not found after creation");
+            
+        return projectWithIncludes.ToProjectDetailDto();
     }
 
     public async Task<ProjectDetailDto> UpdateAsync(UpdateProjectDto request, CancellationToken ct)

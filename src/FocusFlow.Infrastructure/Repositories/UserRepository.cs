@@ -3,8 +3,8 @@ using Microsoft.Extensions.Logging;
 
 public class UserRepository : BaseRepository<User>, IUserRepository
 {
-    public UserRepository(FocusFlowDbContext context, ILogger<UserRepository> logger)
-        : base(logger, context)
+    public UserRepository(FocusFlowDbContext context, ILogger<UserRepository> logger, ICurrentUserService currentUserService)
+        : base(logger, context, currentUserService)
     {
     }
 

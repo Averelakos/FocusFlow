@@ -1,0 +1,95 @@
+@using FocusFlow.Client.Core.Models.Projects
+@using FocusFlow.Client.Core.Services
+@using FocusFlow.Client.Services
+@inject ProjectClientService ProjectClientService
+@inject NotificationService NotificationService
+
+<div class="project-form">
+    <EditForm Model="@model" OnValidSubmit="HandleSubmit">
+        <DataAnnotationsValidator />
+        
+        <div class="form-group">
+            <label for="name">Project Name *</label>
+            <InputText id="name" class="form-control" @bind-Value="model.Name" />
+            <ValidationMessage For="@(() => model.Name)" />
+        </div>
+
+        <div class="form-group">
+            <label for="description">Description</label>
+            <InputTextArea id="description" class="form-control" @bind-Value="model.Description" rows="4" />
+            <ValidationMessage For="@(() => model.Description)" />
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="startDate">Start Date</label>
+                <InputDate id="startDate" class="form-control" @bind-Value="model.StartDate" />
+                <ValidationMessage For="@(() => model.StartDate)" />
+            </div>
+
+            <div class="form-group">
+                <label for="endDate">End Date</label>
+                <InputDate id="endDate" class="form-control" @bind-Value="model.EndDate" />
+                <ValidationMessage For="@(() => model.EndDate)" />
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary" disabled="@isSubmitting">
+                @if (isSubmitting)
+                {
+                    <span><i class="fa-solid fa-spinner fa-spin"></i> Creating...</span>
+                }
+                else
+                {
+                    <span><i class="fa-solid fa-plus"></i> Create Project</span>
+                }
+            </button>
+            <button type="button" class="btn btn-secondary" @onclick="Cancel">
+                Cancel
+            </button>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+    [Parameter]
+    public EventCallback<ProjectDetailDto> OnProjectCreated { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    private CreateProjectDto model = new();
+    private bool isSubmitting = false;
+
+    private async Task HandleSubmit()
+    {
+        isSubmitting = true;
+        try
+        {
+            var result = await ProjectClientService.CreateAsync(model);
+            if (result != null)
+            {
+                NotificationService.ShowSuccess("Project created successfully!");
+                await OnProjectCreated.InvokeAsync(result);
+            }
+            else
+            {
+                NotificationService.ShowError("Failed to create project");
+            }
+        }
+        catch (Exception ex)
+        {
+            NotificationService.ShowError($"Error: {ex.Message}");
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private async Task Cancel()
+    {
+        await OnCancel.InvokeAsync();
+    }
+}

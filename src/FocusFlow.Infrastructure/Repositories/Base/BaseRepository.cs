@@ -1,16 +1,20 @@
 using System.Linq.Expressions;
 using System.Runtime.InteropServices.Marshalling;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 public abstract class BaseRepository<T> where T : BaseEntity
 {
     protected readonly ILogger<BaseRepository<T>> _logger;
+
+    protected readonly ICurrentUserService _currentUserService;
     protected readonly FocusFlowDbContext _focusFlowDbContext;
-    public BaseRepository(ILogger<BaseRepository<T>> logger, FocusFlowDbContext focusFlowDbContext)
+    public BaseRepository(ILogger<BaseRepository<T>> logger, FocusFlowDbContext focusFlowDbContext, ICurrentUserService currentUserService)
     {
         _logger = logger;
         _focusFlowDbContext = focusFlowDbContext;
+        _currentUserService = currentUserService;
     }
 
     protected virtual DbSet<T> Set()
@@ -30,7 +34,7 @@ public abstract class BaseRepository<T> where T : BaseEntity
 
     public virtual async Task<T?> GetAsync(long id, CancellationToken ct)
     {
-        return await Set().AsNoTracking().FirstOrDefaultAsync(e => e.Id == id, ct);
+        return await SetWithIncludes().AsNoTracking().FirstOrDefaultAsync(e => e.Id == id, ct);
     }
 
     public virtual async Task<T?> GetByParameterAsync(Expression<Func<T, bool>> predicate, CancellationToken ct)
@@ -40,6 +44,9 @@ public abstract class BaseRepository<T> where T : BaseEntity
 
     public virtual async Task<T?> AddAsync(T entity, CancellationToken ct)
     {
+        entity.Created = DateTime.UtcNow;
+        entity.CreatedById = _currentUserService.GetUserId();
+
         var result = await Set().AddAsync(entity, ct);
         if (await SaveChangesAsync(ct) < 1)
         {
@@ -51,6 +58,9 @@ public abstract class BaseRepository<T> where T : BaseEntity
     public virtual async Task<bool> UpdateAsync(T entity, CancellationToken ct)
     {
         // ToDO: Consider using a more sophisticated approach to handle concurrency and partial updates.
+        entity.LastUpdated = DateTime.UtcNow;
+        entity.LastUpdatedById = _currentUserService.GetUserId();
+        
         Set().Update(entity);
         return await SaveChangesAsync(ct) > 0;
     }

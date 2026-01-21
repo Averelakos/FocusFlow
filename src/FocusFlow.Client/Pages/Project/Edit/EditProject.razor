@@ -1,0 +1,132 @@
+@using FocusFlow.Client.Core.Models.Projects
+@using FocusFlow.Client.Core.Services
+@using FocusFlow.Client.Services
+@inject ProjectClientService ProjectClientService
+@inject NotificationService NotificationService
+
+@if (isLoading)
+{
+    <div class="loading-container">
+        <i class="fa-solid fa-spinner fa-spin"></i>
+        <span>Loading project...</span>
+    </div>
+}
+else if (model != null)
+{
+    <div class="project-form">
+        <EditForm Model="@model" OnValidSubmit="HandleSubmit">
+            <DataAnnotationsValidator />
+            
+            <div class="form-group">
+                <label for="name">Project Name *</label>
+                <InputText id="name" class="form-control" @bind-Value="model.Name" />
+                <ValidationMessage For="@(() => model.Name)" />
+            </div>
+
+            <div class="form-group">
+                <label for="description">Description</label>
+                <InputTextArea id="description" class="form-control" @bind-Value="model.Description" rows="4" />
+                <ValidationMessage For="@(() => model.Description)" />
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary" disabled="@isSubmitting">
+                    @if (isSubmitting)
+                    {
+                        <span><i class="fa-solid fa-spinner fa-spin"></i> Updating...</span>
+                    }
+                    else
+                    {
+                        <span><i class="fa-solid fa-save"></i> Update Project</span>
+                    }
+                </button>
+                <button type="button" class="btn btn-secondary" @onclick="Cancel">
+                    Cancel
+                </button>
+            </div>
+        </EditForm>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public long ProjectId { get; set; }
+
+    [Parameter]
+    public EventCallback<ProjectDetailDto> OnProjectUpdated { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    private UpdateProjectDto? model;
+    private bool isLoading = true;
+    private bool isSubmitting = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProject();
+    }
+
+    private async Task LoadProject()
+    {
+        isLoading = true;
+        try
+        {
+            var project = await ProjectClientService.GetById(ProjectId);
+            if (project != null)
+            {
+                model = new UpdateProjectDto
+                {
+                    Id = project.Id,
+                    Name = project.Name,
+                    Description = project.Description
+                };
+            }
+            else
+            {
+                NotificationService.ShowError("Project not found");
+            }
+        }
+        catch (Exception ex)
+        {
+            NotificationService.ShowError($"Error loading project: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        if (model == null) return;
+
+        isSubmitting = true;
+        try
+        {
+            var result = await ProjectClientService.UpdateAsync(model);
+            if (result != null)
+            {
+                NotificationService.ShowSuccess("Project updated successfully!");
+                await OnProjectUpdated.InvokeAsync(result);
+            }
+            else
+            {
+                NotificationService.ShowError("Failed to update project");
+            }
+        }
+        catch (Exception ex)
+        {
+            NotificationService.ShowError($"Error: {ex.Message}");
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private async Task Cancel()
+    {
+        await OnCancel.InvokeAsync();
+    }
+}

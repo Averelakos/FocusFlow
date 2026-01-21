@@ -2,6 +2,11 @@
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
 @using FocusFlow.Client.Services
+@using FocusFlow.Client.Core.Models.Projects
+@using FocusFlow.Client.Commons.OverlayPanel
+@using FocusFlow.Client.Pages.Project.Create
+@using FocusFlow.Client.Pages.Project.Edit
+@using FocusFlow.Client.Pages.Project.Detail
 @inject ProjectClientService ProjectClientService
 
 <header class="page-header">
@@ -9,7 +14,7 @@
         <div class="breadcrumb-item">Projects</div> 
     </nav>
     <div class="btns-group">
-        <button class="btn-expanded" type="button">
+        <button class="btn-expanded" type="button" @onclick="OpenCreatePanel">
             <i class="fa-solid fa-plus"></i>
             <span>New Project</span>
         </button>
@@ -32,82 +37,151 @@
                         <span class="txt">Name</span>
                     </div>
                 </th>
+                <th class="col-head">
+                    <div class="col-header-content">
+                        <i class="fa-solid fa-cog"></i>
+                        <span class="txt">Actions</span>
+                    </div>
+                </th>
             </tr>
         </thead>
         @if (projects is null)
         {
-            <p><em>Loading...</em></p>
+            <tbody>
+                <tr>
+                    <td colspan="3" style="text-align: center; padding: 2rem;">
+                        <em>Loading...</em>
+                    </td>
+                </tr>
+            </tbody>
         }
         else
         {
-        <tbody>
-            <tr class="row-content">
-                <td class="col-field">
-                    <span>15</span>
-                </td>
-                <td class="col-field">
-                    <span>Test</span>
-                </td>
-            </tr>
-        </tbody>
+            <tbody>
+                @foreach (var project in projects)
+                {
+                    <tr class="row-content">
+                        <td class="col-field">
+                            <span>@project.Id</span>
+                        </td>
+                        <td class="col-field">
+                            <span>@project.Name</span>
+                        </td>
+                        <td class="col-field">
+                            <div class="action-buttons">
+                                <button class="btn-icon" @onclick="() => OpenDetailPanel(project.Id)" title="View Details">
+                                    <i class="fa-solid fa-eye"></i>
+                                </button>
+                                <button class="btn-icon" @onclick="() => OpenEditPanel(project.Id)" title="Edit">
+                                    <i class="fa-solid fa-edit"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
         }
     </table>
 </div>
 
-@* @if (projects is null)
-{
-    <p><em>Loading...</em></p>
-}
-else
-{
-    <DeleteGame Game="@currentGame" OnClose="@OnDeleteModalCloseAsync">
-    </DeleteGame>
+<!-- Overlay Panels -->
+<OverlayPanel IsVisible="@showCreatePanel" Title="Create New Project" OnClose="CloseCreatePanel">
+    <CreateProject OnProjectCreated="HandleProjectCreated" OnCancel="CloseCreatePanel" />
+</OverlayPanel>
 
-    <table class="table table-striped table-bordered table-hover">
-        <thead class="table-dark">
-            <tr>
-                <th>Id</th>
-                <th>Name</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var project in projects)
-            {
-                <tr>
-                    <td>@project.Id</td>
-                    <td>@project.Name</td>
-                    <td>
-                        <button class="btn btn-primary" @onclick="(() => EditProject(project.Id))"><i
-                        class="oi oi-pencil"></i></button>
-                        <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal"
-                    @onclick="(() => currentProject = project)"><i class="oi oi-x"></i></button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-} *@
+<OverlayPanel IsVisible="@showEditPanel" Title="Edit Project" OnClose="CloseEditPanel">
+    @if (selectedProjectId.HasValue)
+    {
+        <EditProject ProjectId="@selectedProjectId.Value" OnProjectUpdated="HandleProjectUpdated" OnCancel="CloseEditPanel" />
+    }
+</OverlayPanel>
+
+<OverlayPanel IsVisible="@showDetailPanel" Title="Project Details" OnClose="CloseDetailPanel">
+    @if (selectedProjectId.HasValue)
+    {
+        <ProjectDetailView ProjectId="@selectedProjectId.Value" 
+                          OnEdit="() => SwitchToEdit()" 
+                          OnDelete="HandleProjectDeleted"
+                          OnClose="CloseDetailPanel" />
+    }
+</OverlayPanel>
 
 @code {
     private List<ProjectSimpleDto>? projects;
-    private ProjectSimpleDto? currentProject;
+    private long? selectedProjectId;
+    
+    private bool showCreatePanel = false;
+    private bool showEditPanel = false;
+    private bool showDetailPanel = false;
 
     protected override async Task OnInitializedAsync()
+    {
+        await LoadProjects();
+    }
+
+    private async Task LoadProjects()
     {
         projects = await ProjectClientService.GetAll();
     }
 
-    private void EditProject(long projectId)
+    private void OpenCreatePanel()
     {
-        // NavigationManager.NavigateTo($"/editproject/{projectId}");
+        showCreatePanel = true;
     }
 
-    @* private async Task OnDeleteModalCloseAsync(bool isDeleted)
+    private void CloseCreatePanel()
     {
-        if (isDeleted)
-        {
-            projects = await ProjectClientService.GetAll();
-            StateHasChanged();
-        }
-    } *@
+        showCreatePanel = false;
+    }
+
+    private async Task HandleProjectCreated(ProjectDetailDto project)
+    {
+        CloseCreatePanel();
+        await LoadProjects();
+        StateHasChanged();
+    }
+
+    private void OpenEditPanel(long projectId)
+    {
+        selectedProjectId = projectId;
+        showEditPanel = true;
+    }
+
+    private void CloseEditPanel()
+    {
+        showEditPanel = false;
+        selectedProjectId = null;
+    }
+
+    private async Task HandleProjectUpdated(ProjectDetailDto project)
+    {
+        CloseEditPanel();
+        await LoadProjects();
+        StateHasChanged();
+    }
+
+    private void OpenDetailPanel(long projectId)
+    {
+        selectedProjectId = projectId;
+        showDetailPanel = true;
+    }
+
+    private void CloseDetailPanel()
+    {
+        showDetailPanel = false;
+        selectedProjectId = null;
+    }
+
+    private void SwitchToEdit()
+    {
+        showDetailPanel = false;
+        showEditPanel = true;
+    }
+
+    private async Task HandleProjectDeleted()
+    {
+        CloseDetailPanel();
+        await LoadProjects();
+        StateHasChanged();
+    }
 }

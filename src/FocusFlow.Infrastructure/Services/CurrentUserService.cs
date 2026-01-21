@@ -13,7 +13,25 @@ public class CurrentUserService : ICurrentUserService
 
     public long? GetUserId()
     {
-        var userIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+        var user = _httpContextAccessor.HttpContext?.User;
+        Console.WriteLine($"[CurrentUserService] User Identity: {user?.Identity?.Name}, IsAuthenticated: {user?.Identity?.IsAuthenticated}");
+        
+        // Debug: List all claims
+        if (user != null)
+        {
+            Console.WriteLine("[CurrentUserService] All Claims:");
+            foreach (var claim in user.Claims)
+            {
+                Console.WriteLine($"  - Type: {claim.Type}, Value: {claim.Value}");
+            }
+        }
+        
+        // Try different claim types - JWT claims can be mapped to different types
+        var userIdClaim = user?.FindFirst(JwtRegisteredClaimNames.Sub)?.Value
+            ?? user?.FindFirst(ClaimTypes.NameIdentifier)?.Value
+            ?? user?.FindFirst("sub")?.Value;
+            
+        Console.WriteLine($"[CurrentUserService] UserId Claim: {userIdClaim}");
         
         if (string.IsNullOrEmpty(userIdClaim))
             return null;

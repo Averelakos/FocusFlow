@@ -2,7 +2,6 @@
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
 @using FocusFlow.Client.Services
-@inject ApiService ApiService
 
 <header class="page-header">
     <nav class="breadcrumbs">
@@ -10,10 +9,10 @@
     </nav>
 </header>
 
-@if (isLoading)
-{
+@* @if (isLoading)
+{ *@
     <p>Loading...</p>
-}
+@* }
 else if (projects == null || !projects.Any())
 {
     <p>No projects found.</p>
@@ -35,6 +34,6 @@ else
     protected override async Task OnInitializedAsync()
     {
         var token  = await ApiService.TestApiAsync();
-        isLoading = false;
+        isLoading = false; *@
     }
 }

@@ -38,7 +38,6 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<NotificationService>();
 
 // Register existing API services
-builder.Services.AddScoped<ApiService>();
 builder.Services.AddScoped<ProjectClientService>();
 
 await builder.Build().RunAsync();
