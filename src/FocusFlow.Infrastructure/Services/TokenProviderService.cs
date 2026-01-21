@@ -5,6 +5,9 @@ using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
+/// <summary>
+/// Service for generating and validating JWT tokens for authentication
+/// </summary>
 public class TokenProviderService : ITokenProviderService
 {
     private readonly IConfiguration _configuration;
@@ -14,6 +17,11 @@ public class TokenProviderService : ITokenProviderService
         _configuration = configuration;
     }
 
+    /// <summary>
+    /// Generates a JWT access token for the authenticated user
+    /// </summary>
+    /// <param name="user">The user to generate a token for</param>
+    /// <returns>JWT token string with user claims</returns>
     public string GenerateAccessToken(User user)
     {
         var claims = new[]
@@ -42,6 +50,11 @@ public class TokenProviderService : ITokenProviderService
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
+    /// <summary>
+    /// Validates a JWT token and returns the claims principal if valid
+    /// </summary>
+    /// <param name="token">The JWT token string to validate</param>
+    /// <returns>ClaimsPrincipal if token is valid, null otherwise</returns>
     public ClaimsPrincipal? ValidateToken(string token)
     {
         var tokenHandler = new JwtSecurityTokenHandler();

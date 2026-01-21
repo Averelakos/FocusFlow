@@ -8,6 +8,9 @@ public class ProjectTaskRepository : BaseRepository<ProjectTask>, IProjectTaskRe
     {
     }
 
+    /// <summary>
+    /// Includes Project and AssignedTo navigation properties
+    /// </summary>
     protected override IQueryable<ProjectTask> SetWithIncludes()
     {
         return base.SetWithIncludes()

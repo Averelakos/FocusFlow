@@ -8,6 +8,9 @@ public class UserRepository : BaseRepository<User>, IUserRepository
     {
     }
 
+    /// <summary>
+    /// Includes OwnedProjects and AssignedTasks navigation properties
+    /// </summary>
     protected override IQueryable<User> SetWithIncludes()
     {
         return base.SetWithIncludes()

@@ -8,6 +8,9 @@ public class ProjectRepository : BaseRepository<Project>, IProjectRepository
     {
     }
 
+    /// <summary>
+    /// Includes Owner, CreatedBy, LastUpdatedBy, and Tasks navigation properties
+    /// </summary>
     protected override IQueryable<Project> SetWithIncludes()
     {
         return base.SetWithIncludes()

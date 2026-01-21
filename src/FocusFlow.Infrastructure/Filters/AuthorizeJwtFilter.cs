@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
+/// <summary>
+/// Authorization filter that validates JWT tokens from the Authorization header
+/// </summary>
 public class AuthorizeJwtFilter : IAuthorizationFilter
 {
     private readonly ITokenProviderService _tokenProviderService;
@@ -11,6 +14,9 @@ public class AuthorizeJwtFilter : IAuthorizationFilter
         // _requiredPermissions = requiredPermissions?.ToList() ?? new List<EPermission>();
     }
 
+    /// <summary>
+    /// Validates JWT token from Authorization header and sets user principal in context
+    /// </summary>
     public void OnAuthorization(AuthorizationFilterContext context)
     {
         string token;

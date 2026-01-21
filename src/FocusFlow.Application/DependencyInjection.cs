@@ -6,14 +6,21 @@ namespace FocusFlow.Application;
 
 public static class DependencyInjection
 {
+    /// <summary>
+    /// Adds the application services.
+    /// </summary> <param name="services">The services.</param>
+    /// <returns></returns>
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
-        // Add application services here
         services.AddService();
         services.AddValidators();
         return services;
     }
-
+    
+    /// <summary>
+    /// Adds the services.
+    /// </summary> <param name="services">The services.</param>
+    /// <returns></returns>
     public static IServiceCollection AddService(this IServiceCollection services)
     {
         services.AddTransient<IAuthService, AuthService>();
@@ -22,6 +29,10 @@ public static class DependencyInjection
         return services;
     }
 
+    /// <summary>
+    /// Adds the validators.
+    /// </summary> <param name="services">The services.</param>
+    /// <returns></returns>
     public static IServiceCollection AddValidators(this IServiceCollection services)
     {
         services.AddValidatorsFromAssemblyContaining<LoginDtoValidator>();

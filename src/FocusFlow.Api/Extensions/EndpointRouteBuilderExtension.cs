@@ -7,8 +7,6 @@ public static class EndpointRouteBuilderExtension
         if (environment.IsDevelopment())
         {
            app.MapOpenApi();
-           
-        // app.MapGet("/openapi/v1", () => Results.Redirect("/swagger/v1/swagger.json"));
         }
         
         // Map SignalR Hub

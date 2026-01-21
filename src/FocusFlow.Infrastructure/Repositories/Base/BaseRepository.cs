@@ -1,6 +1,4 @@
 using System.Linq.Expressions;
-using System.Runtime.InteropServices.Marshalling;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -17,31 +15,49 @@ public abstract class BaseRepository<T> where T : BaseEntity
         _currentUserService = currentUserService;
     }
 
+    /// <summary>
+    /// Gets the DbSet for the entity type
+    /// </summary>
     protected virtual DbSet<T> Set()
     {
         return _focusFlowDbContext.Set<T>();
     }
 
+    /// <summary>
+    /// Gets the queryable set with navigation properties included (override to customize includes)
+    /// </summary>
     protected virtual IQueryable<T> SetWithIncludes()
     {
         return Set();
     }
 
+    /// <summary>
+    /// Gets a queryable set without tracking for read-only operations
+    /// </summary>
     public virtual IQueryable<T> Queryable()
     {
         return Set().AsNoTracking();
     }
 
+    /// <summary>
+    /// Gets an entity by its ID with navigation properties included
+    /// </summary>
     public virtual async Task<T?> GetAsync(long id, CancellationToken ct)
     {
         return await SetWithIncludes().AsNoTracking().FirstOrDefaultAsync(e => e.Id == id, ct);
     }
 
+    /// <summary>
+    /// Gets an entity matching a specific condition
+    /// </summary>
     public virtual async Task<T?> GetByParameterAsync(Expression<Func<T, bool>> predicate, CancellationToken ct)
     {
         return await Set().AsNoTracking().FirstOrDefaultAsync(predicate, ct);
     }
 
+    /// <summary>
+    /// Adds a new entity to the database with audit fields
+    /// </summary>
     public virtual async Task<T?> AddAsync(T entity, CancellationToken ct)
     {
         entity.Created = DateTime.UtcNow;
@@ -55,6 +71,9 @@ public abstract class BaseRepository<T> where T : BaseEntity
         return await GetAsync(result.Entity.Id, ct);
     }
 
+    /// <summary>
+    /// Updates an existing entity with audit fields
+    /// </summary>
     public virtual async Task<bool> UpdateAsync(T entity, CancellationToken ct)
     {
         // ToDO: Consider using a more sophisticated approach to handle concurrency and partial updates.
@@ -65,6 +84,9 @@ public abstract class BaseRepository<T> where T : BaseEntity
         return await SaveChangesAsync(ct) > 0;
     }
 
+    /// <summary>
+    /// Deletes an entity by its ID
+    /// </summary>
     public virtual async Task<bool> DeleteAsync(long id, CancellationToken ct)
     {
         var entity = await GetAsync(id, ct) 
@@ -85,11 +107,17 @@ public abstract class BaseRepository<T> where T : BaseEntity
         return await SaveChangesAsync(ct) > 0;
     }
 
+    /// <summary>
+    /// Hook for custom delete logic before entity removal (override for cascading deletes)
+    /// </summary>
     public virtual async Task CustomDeleteAsync(T entity, CancellationToken ct)
     {
         await Task.FromResult(true);
     }
 
+    /// <summary>
+    /// Saves changes to the database
+    /// </summary>
     public async Task<int> SaveChangesAsync(CancellationToken ct)
     {
         try
@@ -103,6 +131,9 @@ public abstract class BaseRepository<T> where T : BaseEntity
         }
     }
 
+    /// <summary>
+    /// Checks if any entity matches the specified condition
+    /// </summary>
     public async Task<bool> AnyAsync(Expression<Func<T, bool>> predicate, CancellationToken ct)
     {
         return await _focusFlowDbContext.Set<T>().AnyAsync(predicate, ct);

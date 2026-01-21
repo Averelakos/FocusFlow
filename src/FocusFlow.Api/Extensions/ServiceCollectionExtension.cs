@@ -4,15 +4,14 @@ using FluentValidation.AspNetCore;
 
 public static class ServiceCollectionExtension
 {
+    /// <summary>
+    /// Adds the services.
+    /// </summary> <param name="services">The services.</param>
+    /// <returns></returns>
     public static void AddServices(this IServiceCollection services, IConfiguration configuration)
     {
-        // Register your services here
         services.AddControllers();
-        
-        // Add Memory Cache
         services.AddMemoryCache();
-        
-        // Add FluentValidation
         services.AddFluentValidationAutoValidation();
         services.AddFluentValidationClientsideAdapters();
         
@@ -31,22 +30,15 @@ public static class ServiceCollectionExtension
                             .AllowCredentials();
         }));
         
-        // Add SignalR
         services.AddSignalR();
-        // services.AddCors(options =>
-        // {
-        //     options.AddPolicy("AllowBlazorClient", policy =>
-        //     {
-        //         policy.WithOrigins("http://localhost:5103", "https://localhost:7028")
-        //               .AllowAnyMethod()
-        //               .AllowAnyHeader();
-        //     });
-        // });
     }
-
+    
+    /// <summary>
+    /// Adds the projects.
+    /// </summary> <param name="services">The services.</param>
+    /// <returns></returns>
     public static void AddProjects(this IServiceCollection services, IConfiguration configuration)
     {
-        // Register your projects here
         services.AddApplicationServices();
         services.AddInfrastructureServices(configuration);
     }

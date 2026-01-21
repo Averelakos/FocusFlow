@@ -2,6 +2,9 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 
+/// <summary>
+/// Service for accessing authenticated user information from HTTP context
+/// </summary>
 public class CurrentUserService : ICurrentUserService
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
@@ -11,6 +14,10 @@ public class CurrentUserService : ICurrentUserService
         _httpContextAccessor = httpContextAccessor;
     }
 
+    /// <summary>
+    /// Gets the ID of the currently authenticated user from JWT claims
+    /// </summary>
+    /// <returns>User ID if authenticated, null otherwise</returns>
     public long? GetUserId()
     {
         var user = _httpContextAccessor.HttpContext?.User;
@@ -39,11 +46,19 @@ public class CurrentUserService : ICurrentUserService
         return long.TryParse(userIdClaim, out var userId) ? userId : null;
     }
 
+    /// <summary>
+    /// Gets the email of the currently authenticated user from JWT claims
+    /// </summary>
+    /// <returns>User email if authenticated, null otherwise</returns>
     public string? GetUserEmail()
     {
         return _httpContextAccessor.HttpContext?.User?.FindFirst(JwtRegisteredClaimNames.Email)?.Value;
     }
 
+    /// <summary>
+    /// Gets the username of the currently authenticated user from JWT claims
+    /// </summary>
+    /// <returns>Username if authenticated, null otherwise</returns>
     public string? GetUsername()
     {
         return _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.Name)?.Value;

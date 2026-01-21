@@ -46,7 +46,12 @@ public static class DependencyInjection
         services.AddTransient<IProjectTaskRepository, ProjectTaskRepository>();
         return services;
     }
-
+    
+    /// <summary>
+    /// Adds the services.
+    /// </summary>
+    /// <param name="services">The services.</param>
+    /// <returns></returns>
     public static IServiceCollection AddServices(this IServiceCollection services)
     {
         services.AddHttpContextAccessor();
