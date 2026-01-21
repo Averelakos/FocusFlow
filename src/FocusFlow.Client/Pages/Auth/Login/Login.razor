@@ -5,6 +5,7 @@
 @inject IAuthService AuthService
 @inject NavigationManager Navigation
 @inject AuthenticationStateProvider AuthStateProvider
+@inject NotificationService NotificationService
 
 <PageTitle>Login - FocusFlow</PageTitle>
 
@@ -14,16 +15,17 @@
 
         <EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
             <DataAnnotationsValidator />
-            <ValidationSummary class="validation-summary" />
 
             <div class="form-group">
                 <label for="usernameOrEmail">Username Or Email</label>
                 <InputText id="usernameOrEmail" @bind-Value="loginModel.UsernameOrEmail" class="form-control" placeholder="Enter your username or email" />
+                <ValidationMessage For="@(() => loginModel.UsernameOrEmail)" class="validation-message" />
             </div>
 
             <div class="form-group">
                 <label for="password">Password</label>
                 <InputText id="password" @bind-Value="loginModel.Password" type="password" class="form-control" placeholder="Enter your password" />
+                <ValidationMessage For="@(() => loginModel.Password)" class="validation-message" />
             </div>
 
             <button type="submit" class="btn btn-primary" disabled="@isLoading">
@@ -36,11 +38,6 @@
                     <span>Login</span>
                 }
             </button>
-
-            @if (!string.IsNullOrEmpty(errorMessage))
-            {
-                <div class="alert alert-danger mt-3">@errorMessage</div>
-            }
         </EditForm>
 
         <div class="auth-footer">
@@ -148,23 +145,25 @@
         text-decoration: underline;
     }
 
-    .validation-summary {
-        color: #721c24;
-        background-color: #f8d7da;
-        border: 1px solid #f5c6cb;
-        padding: 10px;
-        border-radius: 4px;
-        margin-bottom: 15px;
+    .validation-message {
+        color: #dc3545;
+        font-size: 12px;
+        margin-top: 4px;
+        display: block;
     }
 </style>
 
 @code {
     private LoginDto loginModel = new();
     private string? errorMessage;
-    private bool isLoading = false;
+    @* private bool isLoading = false; *@
 
-    [Parameter]
-    [SupplyParameterFromQuery]
+    @* [Parameter]
+    [SupplyParameterFromQuery] *@
+    public bool isLoading = false;
+
+    @* [Parameter]
+    [SupplyParameterFromQuery] *@
     public string? ReturnUrl { get; set; }
 
     private async Task HandleLogin()
@@ -172,7 +171,6 @@
         try
         {
             isLoading = true;
-            errorMessage = null;
 
             var result = await AuthService.Login(loginModel);
 
@@ -181,17 +179,19 @@
                 var customAuthStateProvider = (CustomAuthStateProvider)AuthStateProvider;
                 await customAuthStateProvider.MarkUserAsAuthenticated(result.Token);
 
+                NotificationService.ShowSuccess("Login successful! Welcome back.");
+
                 var redirectUrl = string.IsNullOrEmpty(ReturnUrl) ? "/" : Uri.UnescapeDataString(ReturnUrl);
                 Navigation.NavigateTo(redirectUrl);
             }
             else
             {
-                errorMessage = result.Message ?? "Login failed. Please try again.";
+                NotificationService.ShowError(result.Message ?? "Login failed. Please try again.");
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"An error occurred: {ex.Message}";
+            NotificationService.ShowError($"An error occurred: {ex.Message}");
         }
         finally
         {

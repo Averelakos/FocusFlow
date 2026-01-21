@@ -1,0 +1,170 @@
+@using FocusFlow.Client.Core.Services
+@inject NotificationService NotificationService
+@implements IDisposable
+
+@if (isVisible)
+{
+    <div class="notification-banner @notificationClass">
+        <div class="notification-content">
+            <span class="notification-icon">@icon</span>
+            <span class="notification-message">@message</span>
+            <button class="notification-close" @onclick="Hide">&times;</button>
+        </div>
+    </div>
+}
+
+<style>
+    .notification-banner {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        min-width: 300px;
+        max-width: 500px;
+        padding: 16px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+        display: flex;
+        align-items: center;
+    }
+
+    @@keyframes slideIn {
+        from {
+            transform: translateX(400px);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    .notification-content {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+    }
+
+    .notification-icon {
+        font-size: 20px;
+        font-weight: bold;
+        flex-shrink: 0;
+    }
+
+    .notification-message {
+        flex: 1;
+        font-size: 14px;
+        line-height: 1.5;
+        word-break: break-word;
+    }
+
+    .notification-close {
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        opacity: 0.7;
+        transition: opacity 0.2s;
+        padding: 0;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .notification-close:hover {
+        opacity: 1;
+    }
+
+    .notification-success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+
+    .notification-error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+
+    .notification-info {
+        background-color: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #bee5eb;
+    }
+
+    .notification-warning {
+        background-color: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeaa7;
+    }
+</style>
+
+@code {
+    private bool isVisible = false;
+    private string message = string.Empty;
+    private string notificationClass = string.Empty;
+    private string icon = string.Empty;
+    private System.Threading.Timer? timer;
+
+    protected override void OnInitialized()
+    {
+        NotificationService.OnNotification += ShowNotification;
+    }
+
+    private void ShowNotification(string msg, NotificationType type)
+    {
+        message = msg;
+        isVisible = true;
+
+        switch (type)
+        {
+            case NotificationType.Success:
+                notificationClass = "notification-success";
+                icon = "✓";
+                break;
+            case NotificationType.Error:
+                notificationClass = "notification-error";
+                icon = "✕";
+                break;
+            case NotificationType.Info:
+                notificationClass = "notification-info";
+                icon = "ℹ";
+                break;
+            case NotificationType.Warning:
+                notificationClass = "notification-warning";
+                icon = "⚠";
+                break;
+        }
+
+        StateHasChanged();
+
+        // Auto-hide after 5 seconds
+        timer?.Dispose();
+        timer = new System.Threading.Timer(_ =>
+        {
+            InvokeAsync(() =>
+            {
+                Hide();
+            });
+        }, null, 5000, System.Threading.Timeout.Infinite);
+    }
+
+    private void Hide()
+    {
+        isVisible = false;
+        timer?.Dispose();
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        NotificationService.OnNotification -= ShowNotification;
+        timer?.Dispose();
+    }
+}

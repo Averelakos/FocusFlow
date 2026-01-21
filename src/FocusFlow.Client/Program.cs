@@ -34,6 +34,9 @@ builder.Services.AddAuthorizationCore();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
+// Register notification service
+builder.Services.AddScoped<NotificationService>();
+
 // Register existing API services
 builder.Services.AddScoped<ApiService>();
 builder.Services.AddScoped<ProjectClientService>();

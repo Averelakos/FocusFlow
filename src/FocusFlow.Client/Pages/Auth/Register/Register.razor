@@ -5,6 +5,7 @@
 @inject IAuthService AuthService
 @inject NavigationManager Navigation
 @inject AuthenticationStateProvider AuthStateProvider
+@inject NotificationService NotificationService
 
 <PageTitle>Register - FocusFlow</PageTitle>
 
@@ -14,31 +15,35 @@
 
         <EditForm Model="@registerModel" OnValidSubmit="HandleRegister">
             <DataAnnotationsValidator />
-            <ValidationSummary class="validation-summary" />
-            
-            <div class="form-group">
-                <label for="username">Username</label>
-                <InputText id="username" @bind-Value="registerModel.Username" class="form-control" placeholder="Choose a username" />
-            </div>
             
             <div class="form-group">
                 <label for="fullName">Full Name</label>
                 <InputText id="fullName" @bind-Value="registerModel.FullName" class="form-control" placeholder="Enter your full name" />
+                <ValidationMessage For="@(() => registerModel.FullName)" class="validation-message" />
+            </div>
+            
+            <div class="form-group">
+                <label for="username">Username</label>
+                <InputText id="username" @bind-Value="registerModel.Username" class="form-control" placeholder="Choose a username" />
+                <ValidationMessage For="@(() => registerModel.Username)" class="validation-message" />
             </div>
             
             <div class="form-group">
                 <label for="email">Email</label>
                 <InputText id="email" @bind-Value="registerModel.Email" class="form-control" placeholder="Enter your email" />
+                <ValidationMessage For="@(() => registerModel.Email)" class="validation-message" />
             </div>
 
             <div class="form-group">
                 <label for="password">Password</label>
                 <InputText id="password" @bind-Value="registerModel.Password" type="password" class="form-control" placeholder="Enter your password" />
+                <ValidationMessage For="@(() => registerModel.Password)" class="validation-message" />
             </div>
 
             <div class="form-group">
                 <label for="confirmPassword">Confirm Password</label>
                 <InputText id="confirmPassword" @bind-Value="registerModel.ConfirmPassword" type="password" class="form-control" placeholder="Confirm your password" />
+                <ValidationMessage For="@(() => registerModel.ConfirmPassword)" class="validation-message" />
             </div>
 
             <button type="submit" class="btn btn-primary" disabled="@isLoading">
@@ -51,16 +56,6 @@
                     <span>Register</span>
                 }
             </button>
-
-            @if (!string.IsNullOrEmpty(errorMessage))
-            {
-                <div class="alert alert-danger mt-3">@errorMessage</div>
-            }
-
-            @if (registrationSuccess)
-            {
-                <div class="alert alert-success mt-3">Registration successful! Logging you in...</div>
-            }
         </EditForm>
 
         <div class="auth-footer">
@@ -174,59 +169,46 @@
         text-decoration: underline;
     }
 
-    .validation-summary {
-        color: #721c24;
-        background-color: #f8d7da;
-        border: 1px solid #f5c6cb;
-        padding: 10px;
-        border-radius: 4px;
-        margin-bottom: 15px;
+    .validation-message {
+        color: #dc3545;
+        font-size: 12px;
+        margin-top: 4px;
+        display: block;
     }
 </style>
 
 @code {
     private RegisterDto registerModel = new();
-    private string? errorMessage;
     private bool isLoading = false;
-    private bool registrationSuccess = false;
 
     private async Task HandleRegister()
     {
         try
         {
             isLoading = true;
-            errorMessage = null;
-
-            // Validate passwords match
-            if (registerModel.Password != registerModel.ConfirmPassword)
-            {
-                errorMessage = "Passwords do not match.";
-                isLoading = false;
-                return;
-            }
 
             var result = await AuthService.Register(registerModel);
 
             if (result.Success && !string.IsNullOrEmpty(result.Token))
             {
-                registrationSuccess = true;
-                
                 var customAuthStateProvider = (CustomAuthStateProvider)AuthStateProvider;
                 await customAuthStateProvider.MarkUserAsAuthenticated(result.Token);
 
-                // Wait a moment to show success message
+                NotificationService.ShowSuccess("Registration successful! Welcome to FocusFlow.");
+                
+                // Wait a moment before redirecting
                 await Task.Delay(1000);
                 
                 Navigation.NavigateTo("/");
             }
             else
             {
-                errorMessage = result.Message ?? "Registration failed. Please try again.";
+                NotificationService.ShowError(result.Message ?? "Registration failed. Please try again.");
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"An error occurred: {ex.Message}";
+            NotificationService.ShowError($"An error occurred: {ex.Message}");
         }
         finally
         {
