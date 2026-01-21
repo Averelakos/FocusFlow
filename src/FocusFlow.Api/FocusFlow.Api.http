@@ -4,3 +4,51 @@ GET {{FocusFlow.Api_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
+
+# Auth Endpoints
+
+### Register a new user
+POST {{FocusFlow.Api_HostAddress}}/api/Auth/Register
+Content-Type: application/json
+
+{
+  "fullName": "Test User",
+  "username": "testuser",
+  "email": "test@example.com",
+  "password": "Test123!@#"
+}
+
+###
+
+### Login with username
+POST {{FocusFlow.Api_HostAddress}}/api/Auth/login
+Content-Type: application/json
+
+{
+  "usernameOrEmail": "testuser",
+  "password": "Test123!@#"
+}
+
+###
+
+### Login with email
+POST {{FocusFlow.Api_HostAddress}}/api/Auth/login
+Content-Type: application/json
+
+{
+  "usernameOrEmail": "test@example.com",
+  "password": "Test123!@#"
+}
+
+###
+
+### Login with email
+POST {{FocusFlow.Api_HostAddress}}/api/Project/GetAll
+Content-Type: application/json
+
+# {
+#   "usernameOrEmail": "test@example.com",
+#   "password": "Test123!@#"
+# }
+
+###

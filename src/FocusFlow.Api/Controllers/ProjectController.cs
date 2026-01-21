@@ -9,20 +9,37 @@ public class ProjectController : BaseApiController
         _projectService = projectService;
     }
 
-    [HttpGet("Test")]
-    public async Task<IActionResult> Test()
-    {
-        // Registration logic here
-        
-        return Ok(new { token = "test" });
-    }
-
     [HttpGet("Getall")]
+    [AuthorizeJwt]
     public async Task<ActionResult<List<ProjectSimpleDto>>> GetAll()
     {
         // Registration logic here
         var projects =  _projectService.GetAll();
         return Ok(projects);
+    }
+
+    [HttpPost("Create")]
+    [AuthorizeJwt]
+    public async Task<ActionResult<ProjectDetailDto>> Create([FromBody] CreateProjectDto request, CancellationToken ct)
+    {
+        var project = await _projectService.CreateAsync(request, ct);
+        return CreatedAtAction(nameof(Create), new { id = project.Id }, project);
+    }
+
+    [HttpPut("Update")]
+    [AuthorizeJwt]
+    public async Task<ActionResult<ProjectDetailDto>> Update([FromBody] UpdateProjectDto request, CancellationToken ct)
+    {
+        var project = await _projectService.UpdateAsync(request, ct);
+        return Ok(project);
+    }
+
+    [HttpDelete("Delete/{id}")]
+    [AuthorizeJwt]
+    public async Task<ActionResult> Delete(long id, CancellationToken ct)
+    {
+        await _projectService.DeleteAsync(id, ct);
+        return NoContent();
     }
     
 }

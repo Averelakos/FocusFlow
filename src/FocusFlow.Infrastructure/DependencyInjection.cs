@@ -49,7 +49,9 @@ public static class DependencyInjection
 
     public static IServiceCollection AddServices(this IServiceCollection services)
     {
+        services.AddHttpContextAccessor();
         services.AddTransient<ITokenProviderService, TokenProviderService>();
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
         return services;
     }
 }

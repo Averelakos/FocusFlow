@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using FocusFlow.Client.Core.Models.Projects;
 
 namespace FocusFlow.Client.Services;
 
@@ -24,52 +25,60 @@ public class ProjectClientService
         }
     }
 
-    // Example: Get projects
-    // public async Task<List<ProjectDto>?> GetProjectsAsync()
-    // {
-    //     try
-    //     {
-    //         return await _httpClient.GetFromJsonAsync<List<ProjectDto>>("api/projects");
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         Console.WriteLine($"Error fetching projects: {ex.Message}");
-    //         return null;
-    //     }
-    // }
-
-    // // Example: Create project
-    // public async Task<ProjectDto?> CreateProjectAsync(CreateProjectDto createDto)
-    // {
-    //     try
-    //     {
-    //         var response = await _httpClient.PostAsJsonAsync("api/projects", createDto);
-    //         response.EnsureSuccessStatusCode();
-    //         return await response.Content.ReadFromJsonAsync<ProjectDto>();
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         Console.WriteLine($"Error creating project: {ex.Message}");
-    //         return null;
-    //     }
-    // }
-
-public async Task<string?> TestApiAsync()
+    public async Task<ProjectDetailDto?> GetById(long id)
     {
         try
         {
-            var response = await _httpClient.GetFromJsonAsync<Dictionary<string, string>>("api/project/test");
-            if (response != null && response.ContainsKey("token"))
-            {
-                return response["token"];
-            }
-            return null;
+            return await _httpClient.GetFromJsonAsync<ProjectDetailDto>($"api/project/{id}");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error calling test API: {ex.Message}");
+            Console.WriteLine($"Error fetching project: {ex.Message}");
             return null;
         }
     }
-    // Add more methods for your other API endpoints
+
+    public async Task<ProjectDetailDto?> CreateAsync(CreateProjectDto createDto)
+    {
+        try
+        {
+            var response = await _httpClient.PostAsJsonAsync("api/project/create", createDto);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<ProjectDetailDto>();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error creating project: {ex.Message}");
+            return null;
+        }
+    }
+
+    public async Task<ProjectDetailDto?> UpdateAsync(UpdateProjectDto updateDto)
+    {
+        try
+        {
+            var response = await _httpClient.PutAsJsonAsync("api/project/update", updateDto);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<ProjectDetailDto>();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error updating project: {ex.Message}");
+            return null;
+        }
+    }
+
+    public async Task<bool> DeleteAsync(long id)
+    {
+        try
+        {
+            var response = await _httpClient.DeleteAsync($"api/project/delete/{id}");
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error deleting project: {ex.Message}");
+            return false;
+        }
+    }
 }
