@@ -6,9 +6,21 @@ A full-stack task management system built with .NET 10, Blazor WebAssembly, SQL 
 ## 📋 Table of Contents
 - [Technology Stack](#technology-stack)
 - [Prerequisites](#prerequisites)
+  - [For Docker Compose Deployment](#for-docker-compose-deployment)
+  - [For Local Development](#for-local-development)
 - [Quick Start](#quick-start)
-  - [Option 1: Docker Compose ](#option-1-docker-compose)
+  - [Option 1: Docker Compose (Recommended)](#option-1-docker-compose-recommended)
   - [Option 2: Local Development](#option-2-local-development)
+- [Architecture](#architecture)
+  - [System Architecture Diagram](#system-architecture-diagram)
+  - [Component Interaction Flow](#component-interaction-flow)
+  - [Architecture Explanation](#architecture-explanation)
+- [Test Execution Instructions](#test-execution-instructions)
+- [Additional Documentation](#additional-documentation)
+- [Contributing](#contributing)
+- [License](#license)
+- [Author](#author)
+- [Acknowledgments](#acknowledgments)
 
 
 ---
@@ -735,6 +747,91 @@ User Input → Client Validation → HTTP POST → JWT Validation
 4. **Connection Pooling**: EF Core automatically manages connection pool
 5. **Docker Ready**: Easy to scale horizontally with container orchestration
 6. **Database Indexing**: Primary keys and foreign keys indexed by default
+
+---
+
+## 🧪 Test Execution Instructions
+
+FocusFlow includes comprehensive test suites for both Application and Infrastructure layers with **46 passing tests** covering services, repositories, and validation logic.
+
+### Test Projects Structure
+
+```
+tests/
+├── FocusFlow.Application.Tests/        # Application layer tests
+│   ├── Services/                       # Service tests (AuthService, ProjectService, etc.)
+│   ├── Extensions/                     # Extension method tests
+│   └── Exceptions/                     # Exception handling tests
+└── FocusFlow.Infrastructure.Tests/     # Infrastructure layer tests
+    └── Services/                       # CurrentUserService tests
+```
+
+### Prerequisites for Running Tests
+
+**Required:**
+- .NET 10.0 SDK
+- No database connection required (tests use in-memory data or mocks)
+
+**Verification:**
+```bash
+dotnet --version  # Should output 10.0.x
+```
+
+### Running All Tests
+
+#### From Solution Root
+```bash
+# Run all tests in the solution
+dotnet test
+
+# Run with detailed output
+dotnet test --verbosity normal
+
+# Run with code coverage
+dotnet test --collect:"XPlat Code Coverage"
+```
+
+**Expected Output:**
+```
+Passed!  - Failed:     0, Passed:    46, Skipped:     0, Total:    46
+```
+
+#### From Specific Test Project
+```bash
+# Run only Application tests
+cd tests/FocusFlow.Application.Tests
+dotnet test
+
+# Run only Infrastructure tests
+cd tests/FocusFlow.Infrastructure.Tests
+dotnet test
+```
+
+### Running Specific Test Classes
+
+```bash
+# Run all tests in a specific class
+dotnet test --filter "FullyQualifiedName~AuthServiceTests"
+
+# Run all tests in ProjectService
+dotnet test --filter "FullyQualifiedName~ProjectServiceTests"
+
+# Run all tests in CurrentUserService
+dotnet test --filter "FullyQualifiedName~CurrentUserServiceTests"
+```
+
+### Running Tests by Category
+
+```bash
+# Run all service tests
+dotnet test --filter "Category=Services"
+
+# Run all validation tests
+dotnet test --filter "Category=Validation"
+
+# Run all exception tests
+dotnet test --filter "Category=Exceptions"
+```
 
 ---
 
