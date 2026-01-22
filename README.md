@@ -472,6 +472,270 @@ docker compose ps database
 dotnet ef database drop --project ../FocusFlow.Api
 dotnet ef database update --project ../FocusFlow.Api
 ```
+
+---
+
+## 🏗️ Architecture
+
+### System Architecture Diagram
+
+```mermaid
+graph TB
+    subgraph "Client Layer"
+        UI[Blazor WebAssembly<br/>Port 3000]
+        style UI fill:#4CAF50,stroke:#2E7D32,color:#fff
+    end
+    
+    subgraph "API Layer"
+        API[ASP.NET Core API<br/>Port 5094]
+        Controllers[Controllers<br/>AuthController<br/>ProjectController<br/>TaskController<br/>UserController]
+        Auth[JWT Authentication<br/>& Authorization]
+        
+        style API fill:#2196F3,stroke:#1565C0,color:#fff
+        style Controllers fill:#64B5F6,stroke:#1976D2,color:#fff
+        style Auth fill:#1976D2,stroke:#0D47A1,color:#fff
+    end
+    
+    subgraph "Application Layer"
+        Services[Services<br/>AuthService<br/>ProjectService<br/>TaskService<br/>UserService]
+        Validators[FluentValidation<br/>Input Validation]
+        DTOs[DTOs<br/>Data Transfer Objects]
+        
+        style Services fill:#FF9800,stroke:#E65100,color:#fff
+        style Validators fill:#FFB74D,stroke:#F57C00,color:#fff
+        style DTOs fill:#FFB74D,stroke:#F57C00,color:#fff
+    end
+    
+    subgraph "Domain Layer"
+        Entities[Domain Entities<br/>User, Project, Task]
+        Enums[Enums<br/>Status, Priority]
+        
+        style Entities fill:#9C27B0,stroke:#4A148C,color:#fff
+        style Enums fill:#BA68C8,stroke:#6A1B9A,color:#fff
+    end
+    
+    subgraph "Infrastructure Layer"
+        Repos[Repositories<br/>Data Access]
+        EF[Entity Framework Core<br/>ORM]
+        DB[(SQL Server 2022<br/>Port 14330)]
+        
+        style Repos fill:#F44336,stroke:#B71C1C,color:#fff
+        style EF fill:#E57373,stroke:#C62828,color:#fff
+        style DB fill:#C62828,stroke:#7F0000,color:#fff
+    end
+    
+    subgraph "Real-Time Communication"
+        SignalR[SignalR Hub<br/>WebSocket]
+        
+        style SignalR fill:#00BCD4,stroke:#006064,color:#fff
+    end
+    
+    UI -->|HTTP/REST| API
+    UI <-->|WebSocket| SignalR
+    API --> Controllers
+    Controllers --> Auth
+    Controllers --> Services
+    Services --> Validators
+    Services --> DTOs
+    Services --> Repos
+    Services <-->|Notifications| SignalR
+    Repos --> EF
+    EF --> DB
+    Services --> Entities
+    Entities --> Enums
+```
+
+### Component Interaction Flow
+
+```mermaid
+sequenceDiagram
+    participant User as 👤 User
+    participant Client as Blazor Client
+    participant API as ASP.NET API
+    participant Auth as JWT Auth
+    participant Service as Service Layer
+    participant Repo as Repository
+    participant DB as SQL Server
+    participant SignalR as SignalR Hub
+
+    rect rgb(200, 220, 240)
+        Note over User,SignalR: 1. User Authentication Flow
+        User->>Client: Enter credentials
+        Client->>API: POST /api/auth/login
+        API->>Auth: Validate credentials
+        Auth->>Service: AuthService.LoginAsync()
+        Service->>Repo: GetByEmailAsync()
+        Repo->>DB: Query user
+        DB-->>Repo: User data
+        Repo-->>Service: User entity
+        Service->>Auth: Generate JWT token
+        Auth-->>API: JWT token
+        API-->>Client: AuthResponse with token
+        Client-->>User: Redirect to dashboard
+    end
+
+    rect rgb(220, 240, 200)
+        Note over User,SignalR: 2. Create Task Flow with Real-Time Notification
+        User->>Client: Create new task
+        Client->>Client: Validate input
+        Client->>API: POST /api/projecttask/create<br/>(with JWT token)
+        API->>Auth: Validate JWT
+        Auth-->>API: User authorized
+        API->>Service: ProjectTaskService.CreateAsync()
+        Service->>Repo: AddAsync(task)
+        Repo->>DB: INSERT task
+        DB-->>Repo: Task created
+        Repo-->>Service: Task entity
+        Service->>SignalR: Broadcast "TaskCreated" event
+        SignalR-->>Client: Real-time notification
+        Service-->>API: TaskDetailDto
+        API-->>Client: 201 Created
+        Client-->>User: Show success message
+        Client->>Client: Update task list
+    end
+
+    rect rgb(240, 220, 200)
+        Note over User,SignalR: 3. Query with Filtering Flow
+        User->>Client: Filter tasks by status
+        Client->>API: GET /api/projecttask/getall?status=InProgress
+        API->>Auth: Validate JWT
+        Auth-->>API: User authorized
+        API->>Service: GetAll(status=InProgress)
+        Service->>Repo: Queryable().Where(status)
+        Repo->>DB: SELECT with WHERE clause
+        DB-->>Repo: Filtered results
+        Repo-->>Service: Task entities
+        Service-->>API: List<TaskSimpleDto>
+        API-->>Client: 200 OK with data
+        Client-->>User: Display filtered tasks
+    end
+```
+
+### Architecture Explanation
+
+#### **Layered Architecture (Clean Architecture)**
+
+FocusFlow follows **Clean Architecture** principles, organizing code into distinct layers with clear separation of concerns:
+
+1. **Domain Layer** (Core Business Logic)
+   - **Purpose**: Contains pure business entities and rules
+   - **Components**: 
+     - `User`, `Project`, `ProjectTask` entities
+     - `ProjectTaskStatus`, `ProjectTaskPriority` enums
+   - **Dependencies**: None (most inner layer)
+   - **Benefit**: Business logic independent of frameworks and databases
+
+2. **Application Layer** (Use Cases)
+   - **Purpose**: Implements application business logic and orchestration
+   - **Components**:
+     - Services (`AuthService`, `ProjectService`, `ProjectTaskService`, `UserService`)
+     - DTOs (Data Transfer Objects) for API contracts
+     - FluentValidation validators for input validation
+     - Service interfaces and contracts
+   - **Dependencies**: Domain layer only
+   - **Benefit**: Reusable business logic, testable without infrastructure
+
+3. **Infrastructure Layer** (External Concerns)
+   - **Purpose**: Handles data persistence and external integrations
+   - **Components**:
+     - Repositories (implementation of data access patterns)
+     - Entity Framework Core context and configurations
+     - Database migrations
+     - External service implementations
+   - **Dependencies**: Domain + Application layers
+   - **Benefit**: Easy to swap database or external services
+
+4. **API Layer** (Presentation/Entry Point)
+   - **Purpose**: Exposes HTTP endpoints and handles web concerns
+   - **Components**:
+     - Controllers (`AuthController`, `ProjectController`, etc.)
+     - JWT authentication middleware
+     - CORS configuration
+     - SignalR hub for real-time communication
+   - **Dependencies**: All layers
+   - **Benefit**: Clean REST API, easy to add GraphQL or gRPC later
+
+5. **Client Layer** (User Interface)
+   - **Purpose**: Provides interactive user interface
+   - **Components**:
+     - Blazor WebAssembly components and pages
+     - Client-side services
+     - SignalR client for real-time updates
+     - State management
+   - **Dependencies**: Communicates with API via HTTP
+   - **Benefit**: Rich, responsive SPA experience
+
+#### **Key Architectural Patterns**
+
+**1. Repository Pattern**
+```
+Service → IRepository (interface) → Repository (implementation) → EF Core → Database
+```
+- Abstracts data access logic
+- Makes services testable with mock repositories
+- Centralizes database queries
+
+**2. Dependency Injection**
+- All services registered in `DependencyInjection.cs`
+- Constructor injection throughout the application
+- Promotes loose coupling and testability
+
+**3. DTO Pattern**
+- Separates internal entities from API contracts
+- Prevents over-posting attacks
+- Allows different representations for different contexts
+
+**4. Mediator Pattern (via Services)**
+- Controllers don't access repositories directly
+- Services act as mediators between controllers and data access
+- Centralizes business logic
+
+#### **Communication Flow**
+
+**Synchronous (REST API)**
+1. Client sends HTTP request with JWT token
+2. API validates token via middleware
+3. Controller receives request, delegates to service
+4. Service executes business logic, uses repository
+5. Repository performs database operation via EF Core
+6. Response flows back up the chain
+7. Client receives DTO response
+
+**Asynchronous (SignalR)**
+1. Client connects to SignalR hub on page load
+2. When task is created/updated/deleted, service calls hub
+3. Hub broadcasts event to all connected clients
+4. Clients receive real-time notification
+5. UI updates automatically without page refresh
+
+#### **Security Architecture**
+
+- **Authentication**: JWT tokens with configurable expiration
+- **Authorization**: `[AuthorizeJwt]` attribute on protected endpoints
+- **Password Security**: BCrypt hashing (never stored in plain text)
+- **CORS**: Configured to allow specific client origins only
+- **SQL Injection**: Prevented by EF Core parameterized queries
+- **XSS Protection**: Blazor automatic escaping + CSP headers
+
+#### **Data Flow Example: Creating a Task**
+
+```
+User Input → Client Validation → HTTP POST → JWT Validation 
+→ Controller → Service Layer Validation → Repository → EF Core 
+→ SQL Server → Response DTO → JSON → Client → UI Update
+                     ↓
+                SignalR Notification → All Connected Clients
+```
+
+#### **Scalability Considerations**
+
+1. **Stateless API**: Each request is independent (JWT contains user info)
+2. **Caching**: Project lookups cached for 24 hours
+3. **Async/Await**: All I/O operations are asynchronous
+4. **Connection Pooling**: EF Core automatically manages connection pool
+5. **Docker Ready**: Easy to scale horizontally with container orchestration
+6. **Database Indexing**: Primary keys and foreign keys indexed by default
+
 ---
 
 ## 📚 Additional Documentation
