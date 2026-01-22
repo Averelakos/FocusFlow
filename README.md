@@ -659,25 +659,6 @@ Service → IRepository (interface) → Repository (implementation) → EF Core 
 - **SQL Injection**: Prevented by EF Core parameterized queries
 - **XSS Protection**: Blazor automatic escaping + CSP headers
 
-#### **Data Flow Example: Creating a Task**
-
-```
-User Input → Client Validation → HTTP POST → JWT Validation 
-→ Controller → Service Layer Validation → Repository → EF Core 
-→ SQL Server → Response DTO → JSON → Client → UI Update
-                     ↓
-                SignalR Notification → All Connected Clients
-```
-
-#### **Scalability Considerations**
-
-1. **Stateless API**: Each request is independent (JWT contains user info)
-2. **Caching**: Project lookups cached for 24 hours
-3. **Async/Await**: All I/O operations are asynchronous
-4. **Connection Pooling**: EF Core automatically manages connection pool
-5. **Docker Ready**: Easy to scale horizontally with container orchestration
-6. **Database Indexing**: Primary keys and foreign keys indexed by default
-
 ---
 
 ## 🧪 Test Execution Instructions
@@ -830,16 +811,6 @@ Key architectural and technical decisions made during the development of FocusFl
 
 ---
 
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
----
-
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
@@ -849,13 +820,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 👨‍💻 Author
 
 **Your Name**  
-- GitHub: [@yourusername](https://github.com/yourusername)
-- LinkedIn: [Your LinkedIn](https://linkedin.com/in/yourprofile)
+- GitHub: [@Averelakos](https://github.com/Averelakos)
+- LinkedIn: [Iraklis Tsikas](https://linkedin.com/in/iraklis-tsikas-084327164/)
 
 ---
 
 ## 🙏 Acknowledgments
 
-- Built with ❤️ using .NET 10 and Blazor WebAssembly
-- Inspired by modern task management tools
-- Community contributions and feedback
+- Built  using .NET 10 and Blazor WebAssembly
