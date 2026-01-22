@@ -16,6 +16,7 @@ A full-stack task management system built with .NET 10, Blazor WebAssembly, SQL 
   - [Component Interaction Flow](#component-interaction-flow)
   - [Architecture Explanation](#architecture-explanation)
 - [Test Execution Instructions](#test-execution-instructions)
+- [Decision Log / ADR](#decision-log--adr)
 - [Additional Documentation](#additional-documentation)
 - [Contributing](#contributing)
 - [License](#license)
@@ -74,22 +75,6 @@ A full-stack task management system built with .NET 10, Blazor WebAssembly, SQL 
    git --version
    ```
 
-#### System Requirements
-- **RAM**: Minimum 4GB (8GB recommended)
-  - SQL Server container: ~2GB
-  - API container: ~512MB
-  - Client container: ~100MB
-  
-- **Disk Space**: Minimum 5GB free
-  - Docker images: ~2GB
-  - SQL Server data: ~500MB (grows with usage)
-  - Build cache: ~1-2GB
-
-- **Ports Available**:
-  - `3000` - Client (Blazor WebAssembly)
-  - `5094` - API (.NET)
-  - `14330` - Database (SQL Server)
-
 ---
 
 ### For Local Development
@@ -110,7 +95,6 @@ A full-stack task management system built with .NET 10, Blazor WebAssembly, SQL 
      - SQL Server Express (free, local development)
      - SQL Server Developer Edition (free, full-featured)
      - SQL Server in Docker (easiest for development)
-     - Azure SQL Database (cloud option)
    
    - **Download**: [SQL Server Downloads](https://www.microsoft.com/en-us/sql-server/sql-server-downloads)
    
@@ -123,14 +107,6 @@ A full-stack task management system built with .NET 10, Blazor WebAssembly, SQL 
    sqlcmd -S localhost -U sa -Q "SELECT @@VERSION"
    ```
 
-#### System Requirements
-- **RAM**: Minimum 8GB (16GB recommended for comfortable development)
-- **Disk Space**: Minimum 10GB free
-  - .NET SDK: ~1GB
-  - Visual Studio/Rider: ~5-10GB
-  - SQL Server: ~2GB
-  - Project + packages: ~500MB
-
 ---
 
 ## 🚀 Quick Start
@@ -141,7 +117,7 @@ This approach runs the entire application stack (database, API, and client) in i
 
 #### Step 1: Clone the Repository
 ```bash
-git clone https://github.com/yourusername/FocusFlow.git
+git clone https://github.com/Averelakos/FocusFlow.git
 cd FocusFlow
 ```
 
@@ -275,7 +251,7 @@ This approach runs the application directly on your machine using the .NET SDK. 
 
 #### Step 1: Clone the Repository
 ```bash
-git clone https://github.com/yourusername/FocusFlow.git
+git clone https://github.com/Averelakos/FocusFlow.git
 cd FocusFlow
 ```
 
@@ -327,12 +303,8 @@ Edit `src/FocusFlow.Api/appsettings.Development.json`:
 }
 ```
 
-#### Step 5: Install EF Core Tools (if not already installed)
-```bash
-dotnet tool install --global dotnet-ef
-```
 
-#### Step 6: Run Database Migrations
+#### Step 5: Run Database Migrations
 ```bash
 cd src/FocusFlow.Infrastructure
 
@@ -348,7 +320,7 @@ Applying migration '20260121144545_AddStatusAndPriorityToProjectTask'.
 Done.
 ```
 
-#### Step 7: Run the API
+#### Step 6: Run the API
 ```bash
 # Open a new terminal
 cd src/FocusFlow.Api
@@ -368,7 +340,7 @@ info: Microsoft.Hosting.Lifetime[14]
 - Swagger: http://localhost:5000/swagger or https://localhost:5001/swagger
 - Health: http://localhost:5000/health
 
-#### Step 8: Run the Client
+#### Step 7: Run the Client
 ```bash
 # Open another terminal
 cd src/FocusFlow.Client
@@ -385,7 +357,7 @@ info: Microsoft.Hosting.Lifetime[14]
 
 **Note**: The client auto-detects the port, usually `5002` or `5003`.
 
-#### Step 9: Configure API URL in Client
+#### Step 8: Configure API URL in Client
 
 If the API is not on the default port (5000), update the client configuration.
 
@@ -404,7 +376,7 @@ builder.Services.AddScoped(sp => new HttpClient
 });
 ```
 
-#### Step 10: Access the Application
+#### Step 9: Access the Application
 
 - **Client**: http://localhost:5002 (or the port shown in terminal)
 - **API**: http://localhost:5000/swagger
@@ -442,49 +414,6 @@ dotnet ef database update --project ../FocusFlow.Api
 # Rollback last migration
 dotnet ef database update PreviousMigrationName --project ../FocusFlow.Api
 ```
-
-#### Troubleshooting Local Development
-
-**Problem**: "Cannot connect to database"
-```bash
-# Check database is running
-docker compose ps database  # if using Docker
-# or
-sqlcmd -S localhost -U sa -P "YourPassword" -Q "SELECT 1"
-
-# Verify connection string in appsettings.Development.json
-# Ensure password matches and port is correct
-```
-
-**Problem**: "CORS policy" error in browser
-```bash
-# Check API is running
-curl http://localhost:5000/health
-
-# Verify CORS settings include client URL
-# Check src/FocusFlow.Api/Extensions/ServiceCollectionExtension.cs
-```
-
-**Problem**: "Port already in use"
-```bash
-# Find what's using the port
-sudo lsof -i :5000
-
-# Kill the process or use a different port
-# API: Edit launchSettings.json
-# Client: Use a different port with dotnet run --urls "http://localhost:5003"
-```
-
-**Problem**: Migration fails
-```bash
-# Check database is accessible
-docker compose ps database
-
-# Drop database and recreate
-dotnet ef database drop --project ../FocusFlow.Api
-dotnet ef database update --project ../FocusFlow.Api
-```
-
 ---
 
 ## 🏗️ Architecture
@@ -561,7 +490,7 @@ graph TB
 
 ```mermaid
 sequenceDiagram
-    participant User as 👤 User
+    actor User as 👤 User
     participant Client as Blazor Client
     participant API as ASP.NET API
     participant Auth as JWT Auth
@@ -832,6 +761,63 @@ dotnet test --filter "Category=Validation"
 # Run all exception tests
 dotnet test --filter "Category=Exceptions"
 ```
+
+---
+
+## � Decision Log / ADR
+
+Key architectural and technical decisions made during the development of FocusFlow:
+
+### Architecture & Design Patterns
+- **Clean Architecture**: Chose layered architecture (Domain → Application → Infrastructure → API → Client) for separation of concerns, testability, and maintainability
+- **Repository Pattern**: Abstracted data access layer to decouple business logic from EF Core implementation
+- **Dependency Injection**: Used native .NET DI container for loose coupling and easier testing
+
+### Technology Stack
+- **.NET 10.0**: Selected latest LTS version for performance improvements, minimal APIs, and long-term support
+- **Blazor WebAssembly**: Chosen over React/Angular for full-stack C# development, reducing context switching and shared DTOs between client/server
+- **SQL Server 2022**: Selected for enterprise-grade features, optimal integration with EF Core, and support for complex queries
+- **Entity Framework Core 9.0**: Preferred over Dapper for rapid development, change tracking, and LINQ support
+- **Docker & Docker Compose**: Containerized all components for consistent environments across dev/staging/prod
+
+### Authentication & Security
+- **JWT (JSON Web Tokens)**: Stateless authentication for API scalability without server-side session storage
+- **HttpOnly Cookies**: Store JWT in HttpOnly cookies (client-side) to prevent XSS attacks
+- **Password Hashing**: Used ASP.NET Core Identity's `PasswordHasher<T>` for secure bcrypt-based hashing
+- **Authorization Policies**: Resource-based authorization to ensure users can only access their projects and tasks
+
+### Real-Time Communication
+- **SignalR**: Implemented for real-time task updates instead of polling to reduce server load and improve UX
+- **Hub Architecture**: Centralized SignalR hub for broadcasting project and task changes to connected clients
+
+### Performance & Caching
+- **Memory Cache**: Implemented 24-hour cache for project lookups to reduce database hits
+- **Async/Await**: All I/O operations are asynchronous to prevent thread blocking
+- **Connection Pooling**: Leveraged EF Core's built-in connection pooling for database efficiency
+
+### Database Design
+- **Timestamp Auditing**: Added `CreatedAt` and `UpdatedAt` fields for all entities
+
+### API Design
+- **RESTful Conventions**: Followed REST principles with proper HTTP verbs (GET/POST/PUT/DELETE) and status codes
+- **Swagger/OpenAPI**: Auto-generated API documentation for developer experience
+
+### Frontend Architecture
+- **Component-Based UI**: Modular Razor components for reusability (NotificationBanner, Breadcrumb, etc.)
+- **Service Layer**: Separated HTTP logic into client services (`ProjectClientService`, `UserClientService`) for cleaner components
+- **Local Storage**: Used browser LocalStorage for JWT persistence across sessions
+- **Route-Based Navigation**: Blazor's built-in routing with `@page` directives for SPA experience
+
+### Validation & Error Handling
+- **FluentValidation**: Declarative validation rules in Application layer instead of data annotations for better separation
+- **Global Exception Handler**: Centralized error handling middleware to return consistent error responses
+- **Custom Exceptions**: Domain-specific exceptions (`NotFoundException`, `UnauthorizedException`, `ForbiddenException`) for semantic error handling
+
+### Testing Strategy
+- **xUnit**: Chosen for .NET Core compatibility and modern test features (theories, fixtures)
+- **Moq**: Mocking framework for isolating units under test
+- **In-Memory Database**: EF Core InMemory provider for fast repository tests without SQL Server dependency
+- **FluentAssertions**: Readable assertion syntax for better test maintainability
 
 ---
 
