@@ -1,10 +1,12 @@
 @using FocusFlow.Client.Core.Models.ProjectTasks
 @using FocusFlow.Client.Core.Models.Projects
+@using FocusFlow.Client.Core.Models.Users
 @using FocusFlow.Client.Core.Models.Enums
 @using FocusFlow.Client.Core.Services
 @using FocusFlow.Client.Services
 @inject ProjectTaskClientService ProjectTaskClientService
 @inject ProjectClientService ProjectClientService
+@inject UserClientService UserClientService
 @inject NotificationService NotificationService
 
 <div class="task-form">
@@ -36,6 +38,20 @@
                     }
                 </InputSelect>
                 <ValidationMessage For="@(() => model.ProjectId)" />
+            </div>
+
+            <div class="form-group">
+                <label for="assignedTo">Assign To</label>
+                <InputSelect id="assignedTo" class="form-control" @bind-Value="model.AssignedToId">
+                    <option value="">-- Assign to me (default) --</option>
+                    @if (users != null)
+                    {
+                        @foreach (var user in users)
+                        {
+                            <option value="@user.Id">@user.FullName</option>
+                        }
+                    }
+                </InputSelect>
             </div>
 
             <div class="form-group">
@@ -107,11 +123,13 @@
 
     private CreateProjectTaskDto model = new();
     private List<ProjectLookupDto>? projects;
+    private List<UserLookupDto>? users;
     private bool isSubmitting = false;
 
     protected override async Task OnInitializedAsync()
     {
         projects = await ProjectClientService.GetLookup();
+        users = await UserClientService.GetLookup();
         
         // Set first project as default if available
         if (projects?.Any() == true)

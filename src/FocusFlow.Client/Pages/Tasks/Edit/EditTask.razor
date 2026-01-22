@@ -1,8 +1,10 @@
 @using FocusFlow.Client.Core.Models.ProjectTasks
+@using FocusFlow.Client.Core.Models.Users
 @using FocusFlow.Client.Core.Models.Enums
 @using FocusFlow.Client.Core.Services
 @using FocusFlow.Client.Services
 @inject ProjectTaskClientService ProjectTaskClientService
+@inject UserClientService UserClientService
 @inject NotificationService NotificationService
 
 @if (isLoading)
@@ -22,6 +24,19 @@ else if (model != null)
                 <label for="title">Task Title *</label>
                 <InputText id="title" class="form-control" @bind-Value="model.Title" />
                 <ValidationMessage For="@(() => model.Title)" />
+            </div>
+
+            <div class="form-group">
+                <label for="assignedTo">Assign To</label>
+                <InputSelect id="assignedTo" class="form-control" @bind-Value="model.AssignedToId">
+                    @if (users != null)
+                    {
+                        @foreach (var user in users)
+                        {
+                            <option value="@user.Id">@user.FullName</option>
+                        }
+                    }
+                </InputSelect>
             </div>
 
             <div class="form-group">
@@ -89,11 +104,13 @@ else if (model != null)
     public EventCallback OnCancel { get; set; }
 
     private UpdateProjectTaskDto? model;
+    private List<UserLookupDto>? users;
     private bool isLoading = true;
     private bool isSubmitting = false;
 
     protected override async Task OnInitializedAsync()
     {
+        users = await UserClientService.GetLookup();
         await LoadTask();
     }
 
