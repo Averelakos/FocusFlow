@@ -1,0 +1,133 @@
+# ============================================
+# Production Docker Compose Configuration
+# ============================================
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.prod.yml up
+# This file OVERRIDES and EXTENDS base docker-compose.yml
+
+version: '3.8'
+
+services:
+  
+  database:
+    # Production: Use specific version tag (not 'latest')
+    # Prevents unexpected breaking changes from automatic updates
+    image: mcr.microsoft.com/mssql/server:2022-CU10-ubuntu-22.04
+    
+    # Production: Always restart (even after server reboot)
+    restart: always
+    
+    # Production: Resource limits prevent one container from consuming all resources
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'      # Maximum 2 CPU cores
+          memory: 4G        # Maximum 4GB RAM
+        reservations:
+          cpus: '1.0'      # Guaranteed 1 CPU core
+          memory: 2G        # Guaranteed 2GB RAM
+    
+    # Production: Backup strategy
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+      - ./backups:/backups  # Mount backup directory
+    
+    # Production: Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"    # Rotate logs at 10MB
+        max-file: "3"      # Keep 3 log files
+
+  api:
+    # Production: Build with specific build arguments
+    build:
+      context: .
+      dockerfile: src/FocusFlow.Api/Dockerfile
+      args:
+        BUILDCONFIG: Release
+    
+    restart: always
+    
+    # Production: Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+      
+      # Production: Run multiple replicas for high availability
+      replicas: 2
+    
+    # Production: Additional environment variables
+    environment:
+      # Enable detailed errors in production? NO - security risk
+      ASPNETCORE_DETAILEDERRORS: "false"
+      
+      # Disable developer exception page
+      ASPNETCORE_ENVIRONMENT: "Production"
+      
+      # Enable HTTPS
+      ASPNETCORE_URLS: "https://+:443;http://+:80"
+      ASPNETCORE_HTTPS_PORT: "443"
+      
+      # SSL Certificate (use Let's Encrypt in production)
+      # ASPNETCORE_Kestrel__Certificates__Default__Path: "/https/cert.pfx"
+      # ASPNETCORE_Kestrel__Certificates__Default__Password: "${CERT_PASSWORD}"
+    
+    # Production: Health check with shorter intervals
+    healthcheck:
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+    
+    # Production: Logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  client:
+    restart: always
+    
+    # Production: Resource limits (nginx is lightweight)
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+      
+      # Production: Multiple replicas
+      replicas: 2
+    
+    # Production: Logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "3"
+
+# Production: Use named volumes with specific drivers
+volumes:
+  sqlserver_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /mnt/data/focusflow/database  # Persistent storage path
+
+# Production: Network with specific subnet
+networks:
+  focusflow-network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.28.0.0/16

@@ -1,0 +1,63 @@
+# .dockerignore - Tells Docker what NOT to include in the build context
+# This speeds up builds and reduces image size
+
+# Git files - version control not needed in containers
+.git
+.gitignore
+.gitattributes
+
+# IDE and editor files - developer tools not needed in production
+.vscode/
+.vs/
+*.swp
+*.swo
+*~
+.idea/
+
+# Build outputs - we'll rebuild inside the container
+**/bin/
+**/obj/
+**/out/
+
+# Test projects - don't need tests in production images
+**/tests/
+**/*.Tests/
+
+# NuGet packages - will be restored during Docker build
+**/packages/
+**/.nuget/
+
+# Documentation and markdown files
+*.md
+LICENSE
+
+# Docker files themselves
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Logs and temporary files
+**/logs/
+**/*.log
+**/tmp/
+**/temp/
+
+# Database files - database runs in separate container
+**/*.db
+**/*.sqlite
+**/*.mdf
+**/*.ldf
+
+# Environment and configuration files with secrets
+.env
+.env.*
+appsettings.Development.json
+appsettings.Local.json
+*.pfx
+*.p12
+*.keyring
+sqlServer.keyring

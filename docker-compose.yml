@@ -1,0 +1,177 @@
+# ============================================
+# Docker Compose Configuration for FocusFlow
+# ============================================
+# Version 3.8 supports all modern Docker features
+version: '3.8'
+
+# ============================================
+# SERVICES: Define all application containers
+# ============================================
+services:
+  
+  # ==========================================
+  # DATABASE: SQL Server
+  # ==========================================
+  # Why separate container? Isolation, easy backups, can scale independently
+  database:
+    # Official Microsoft SQL Server 2022 image for Linux
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    
+    container_name: focusflow-database
+    
+    # Environment variables for SQL Server configuration
+    environment:
+      # Accept End User License Agreement (required)
+      ACCEPT_EULA: "Y"
+      # Set SA (admin) password from .env file
+      # Password requirements: At least 8 chars, uppercase, lowercase, numbers, symbols
+      SA_PASSWORD: "${DB_PASSWORD}"
+      # Enable SQL Server Agent (for jobs, maintenance)
+      MSSQL_AGENT_ENABLED: "true"
+    
+    # Port mapping: host:container
+    # Access database from your machine at localhost:${DATABASE_PORT}
+    ports:
+      - "${DATABASE_PORT}:1433"
+    
+    # Persistent volume: Database data survives container restarts
+    # Without this, data is lost when container stops!
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    
+    # Health check: Is SQL Server ready to accept connections?
+    # Prevents API from starting before database is ready
+    healthcheck:
+      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "${DB_PASSWORD}" -Q "SELECT 1" -C || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    
+    # Restart policy: Always restart if container crashes
+    restart: unless-stopped
+    
+    # Connect to custom network (all containers on same network can communicate)
+    networks:
+      - focusflow-network
+
+  # ==========================================
+  # API: .NET Backend with SignalR
+  # ==========================================
+  api:
+    # Build from Dockerfile instead of using pre-built image
+    build:
+      context: .  # Build context is project root
+      dockerfile: src/FocusFlow.Api/Dockerfile
+    
+    container_name: focusflow-api
+    
+    # Port mapping: API accessible at http://localhost:5094
+    ports:
+      - "${API_PORT}:8080"
+    
+    # Environment variables for API configuration
+    environment:
+      # Tell .NET this is Production environment
+      ASPNETCORE_ENVIRONMENT: "${ASPNETCORE_ENVIRONMENT}"
+      # Flag to indicate running in Docker container
+      DOTNET_RUNNING_IN_CONTAINER: "true"
+      # Logging configuration
+      Logging__LogLevel__Default: "Information"
+      Logging__LogLevel__Microsoft: "Warning"
+      
+      # DATABASE CONNECTION STRING
+      # Server=database - 'database' is the service name above
+      # Docker networking: containers refer to each other by service name
+      # TrustServerCertificate=True - for development (disable SSL validation)
+      ConnectionStrings__DefaultConnection: "Server=database;Database=${DB_NAME};User Id=sa;Password=${DB_PASSWORD};TrustServerCertificate=True;MultipleActiveResultSets=true"
+      
+      # JWT Configuration - MUST match appsettings.json
+      Jwt__Secret: "${JWT_SECRET}"
+      Jwt__Issuer: "${JWT_ISSUER}"
+      Jwt__Audience: "${JWT_AUDIENCE}"
+      Jwt__ExpirationInMinutes: "${JWT_EXPIRATION_MINUTES}"
+      
+      # CORS: Allow client to connect from different origin
+      # In production, replace * with actual client URL
+      Cors__AllowedOrigins__0: "${CLIENT_URL}"
+      Cors__AllowedOrigins__1: "http://localhost:80"
+      
+      # MIGRATIONS: Enable automatic migrations on startup
+      Migrations__Enabled: "true"
+    
+    # Dependencies: Wait for database to be healthy before starting API
+    # Prevents "Cannot connect to database" errors on startup
+    depends_on:
+      database:
+        condition: service_healthy
+    
+    # Restart policy
+    restart: unless-stopped
+    
+    # Network
+    networks:
+      - focusflow-network
+    
+    # Health check for API
+    healthcheck:
+      test: curl -f http://localhost:8080/health || exit 1
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 40s
+
+  # ==========================================
+  # CLIENT: Blazor WebAssembly Frontend
+  # ==========================================
+  client:
+    build:
+      context: .
+      dockerfile: src/FocusFlow.Client/Dockerfile
+      # Build arguments: Pass API URL to client at build time
+      args:
+        API_URL: "${API_URL}"
+    
+    container_name: focusflow-client
+    
+    # Port mapping: Client accessible at http://localhost:3000
+    ports:
+      - "${CLIENT_PORT}:80"
+    
+    # Dependencies: Client should start after API is ready
+    # Though Blazor runs in browser, having API ready prevents errors
+    depends_on:
+      api:
+        condition: service_healthy
+    
+    restart: unless-stopped
+    
+    networks:
+      - focusflow-network
+    
+    # Health check
+    healthcheck:
+      test: curl -f http://localhost/ || exit 1
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+# ============================================
+# NETWORKS: Define custom network
+# ============================================
+# Why custom network? Enables DNS resolution by service name
+# 'api' can connect to 'database' by name, not IP
+networks:
+  focusflow-network:
+    driver: bridge  # Bridge network: containers can communicate, isolated from host
+
+# ============================================
+# VOLUMES: Persistent data storage
+# ============================================
+# Named volumes: Docker manages storage location
+# Data persists even if containers are deleted
+volumes:
+  sqlserver_data:
+    driver: local  # Store on local disk
+    # In production: Use cloud volumes (AWS EBS, Azure Disk, etc.)
