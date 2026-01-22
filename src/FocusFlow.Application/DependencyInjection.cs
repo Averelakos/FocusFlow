@@ -26,6 +26,7 @@ public static class DependencyInjection
         services.AddTransient<IAuthService, AuthService>();
         services.AddTransient<IProjectService, ProjectService>();
         services.AddTransient<IProjectTaskService, ProjectTaskService>();
+        services.AddTransient<IUserService, UserService>();
         return services;
     }
 

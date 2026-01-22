@@ -11,6 +11,7 @@ public static class DependencyInjection
         // Add infrastructure services here
         services.AddDatabaseSqlServer(configuration);
         services.AddRepositories();
+        services.AddConfigurations(configuration);
         services.AddServices();
         return services;
     }
@@ -57,6 +58,13 @@ public static class DependencyInjection
         services.AddHttpContextAccessor();
         services.AddTransient<ITokenProviderService, TokenProviderService>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
+        services.AddScoped<IMigrationService, MigrationService>();
+        return services;
+    }
+
+    public static IServiceCollection AddConfigurations(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.Configure<MigrationConfigurations>(configuration.GetSection("Migrations"));
         return services;
     }
 }

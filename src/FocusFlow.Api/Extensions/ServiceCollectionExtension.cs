@@ -24,7 +24,10 @@ public static class ServiceCollectionExtension
         // Add CORS
         services.AddCors(options => options.AddDefaultPolicy(builder =>
         {
-            builder.WithOrigins("http://localhost:5103", "https://localhost:7028")
+            builder.WithOrigins(
+                            "http://localhost:3000",      // Docker client
+                            "http://localhost:5103",      // Local dev client
+                            "https://localhost:7028")     // Local dev client HTTPS
                             .AllowAnyHeader()
                             .AllowAnyMethod()
                             .AllowCredentials();

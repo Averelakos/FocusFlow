@@ -2,6 +2,11 @@ using Microsoft.AspNetCore.SignalR.Client;
 
 namespace FocusFlow.Client.Core.Services;
 
+/// <summary>
+/// Service for managing real-time task updates via SignalR
+/// </summary>
+public class TaskHubService : IAsyncDisposable
+{
     private readonly HubConnection _hubConnection;
 
     /// <summary>Event raised when a task is created</summary>

@@ -43,5 +43,6 @@ builder.Services.AddSingleton<TaskHubService>();
 // Register existing API services
 builder.Services.AddScoped<ProjectClientService>();
 builder.Services.AddScoped<ProjectTaskClientService>();
+builder.Services.AddScoped<UserClientService>();
 
 await builder.Build().RunAsync();
