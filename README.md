@@ -489,6 +489,7 @@ graph TB
 ### Component Interaction Flow
 
 ```mermaid
+%%{init: {'theme':'base', 'themeVariables': { 'lineColor':'#333333', 'signalColor':'#000000', 'signalTextColor':'#000000', 'sequenceNumberColor':'#000000'}}}%%
 sequenceDiagram
     actor User as 👤 User
     participant Client as Blazor Client
